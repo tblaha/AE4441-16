@@ -36,9 +36,10 @@
         
         
 ## Learn Gurobi:
-1. do the tutorial at https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_simple_python_example.html
-
-
+1. do the tutorials at
+    1. https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_simple_python_example.html
+    2. https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_python_matrix_example.html
+    3. May be important for transportation: https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_python_dictionary_examp.html
 
 
 
