@@ -62,13 +62,16 @@ class net:
             """
         for j in range(cfg.K):  # for each time slot j:
             model.addConstr(self.PS[j] + self.PU[j]   # supply energy
-                            == self.pd[j]  # customer demand
-                            + sum(              # sum over all car energies
-                                  cars[i].Xi[j] # battery charging power 
-                                  for i in range(cfg.N)
-                                  ),
-                            name="C_node_" + str(j),                      
-                            )
+                == self.pd[j]  # customer demand
+                + sum( # sum over all cars
+                      cars[i].Xi[j] # battery charging power 
+                                    # + dot product of mode binaries and loss 
+                                    # list for the different modes
+                      + np.array(cars[i].Yi[j]) @ cars[i].ch[j].P_loss 
+                      for i in range(cfg.N)
+                      ),
+                name="C_node_" + str(j),
+                )
 
 
 #%% Powerplant class that is mentioned and instantiated above

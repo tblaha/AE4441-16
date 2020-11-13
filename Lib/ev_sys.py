@@ -21,13 +21,12 @@ class car:
                  s_day,     # km driven during the day
                  E_eff,     # kWh electrical energy used per km
                  E_bat,     # battery size in kWh
-                 P_max,     # charger max power in both directions
-                 t_conn,    # list of timeslots connected to grid
+                 c_conn,    # list of charger connections to grid
                  ):
         """
         name should be a string
         s_day, E_eff, E_bat, P_max should be scalars
-        t_conn should be a list of 0s and 1s indicated when the EV is connected
+        c_conn should be a list: 0 if no charger, 1-C when the connected
             """
         
         # saving input in internal memory 
@@ -42,29 +41,32 @@ class car:
         # Battery charge at beginning of the day
         self.E_state = 0.5*(self.E_max + self.E_min)
         
-        # max charger power 
-        self.P_max = P_max
+        # instantiate chargers 
+        self.c_conn = c_conn
         
-        # convert t_conn list to a proper boolean array
-        self.t_conn = np.array(t_conn).astype(bool)  # bool
-        
+        self.ch = list()
+        for j in range(cfg.K):
+            self.ch.append(charger(self.c_conn[j]))
+                        
         
 #%% Variables and Bounds
     def create_vars(self, 
                     model,  # the gurobi model to which to add the vars to
                     ):
-        """ Add the variables for the EVs to model (ie the charger powers for 
-        each time slot j)
+        """ Add the variables for the EVs to model:
+        Xij: the charger powers for each time slot j
+        Yijk: the binarys describing the charging setting to use at instant j
             """
         
         self.Xi = list()
+        self.Yi = list()
         for j in range(cfg.K):  # for each time slot j:
             
             # CONTINUOUS charging power variable
             # this does the heavy lifting of adding to model
             x = model.addVar(
-                lb = -self.P_max,
-                ub = +self.P_max,
+                lb = min(self.ch[j].P),
+                ub = max(self.ch[j].P),
                 obj = 0.0, # not in obj directly (see create_constrs of grid.py)
                 vtype=GRB.CONTINUOUS,
                 name="X_" + self.name + "_" + str(j)
@@ -73,7 +75,18 @@ class car:
             # this is only for later use of the vars in the constraints
             self.Xi.append(x)
             
-        return self.Xi
+            # binary charging setting mode variables
+            Yij = list()
+            for k in range(self.ch[j].M):
+                y = model.addVar(
+                    vtype=GRB.BINARY,
+                    name="Y_" + self.name + "_" + str(j) + "_" + str(k)
+                    )
+                Yij.append(y)
+            
+            self.Yi.append(Yij)
+            
+        return self.Xi, self.Yi
     
     
 #%% Constraints
@@ -81,14 +94,26 @@ class car:
                        model,  # the gurobi model to which to add the constrs
                        ):
         
-        # changing power can only be non-zero if the EV is actually connected
+        ## Charging power selection
+        ###############################################
         for j in range(cfg.K):  # for each time slot j
-            # if NOT connected --> X_ij * 1 == 0
-            # if connected     --> X_ij * 0 == 0; hope for the best
+            # Discrete charging power: OOOM value constraint, such that exactly
+            # one charging mode is selected for all times j
             model.addConstr(
-                self.Xi[j] * (~self.t_conn[j]) == 0,
-                name="C_" + self.name + "_" + str(j) + "_conn"
+                sum(self.Yi[j]) == 1, # sum of all binarys is 1
+                name="C_" + self.name + "_" + str(j) + "_OOOM"
                 )
+            
+            # Select charging power from the M possible modes. 
+            # Power = Yij-binarys dotproduct charging power list
+            model.addConstr(
+                self.Xi[j] == np.array(self.Yi[j]) @ self.ch[j].P,
+                name="C_" + self.name + "_" + str(j) + "_Pbat"
+                )
+        
+        
+        ## Resulting battery energy constraints 
+        ################################################
         
         # for each car, the net energy supplied to the battery over the day
         # must be positive; so that we cannot end up with a car that is 
@@ -124,3 +149,33 @@ class car:
                 <= self.E_max,
                 name="C_" + self.name + "_" + str(j) + "_E_ub"
                 )
+
+
+#%% Charger types
+class charger:
+    def __init__(self, ch_type):
+        if ch_type == 0:
+            # no charger
+            self.M = 1
+            self.P = np.array([0])
+            self.P_loss = self.P
+            
+        elif ch_type == 1:
+            # home charger?
+            self.M = 7  # charging modes
+            self.P = np.array([-11, -5, -2, 0, 2, 5, 11])  # kW power
+            self.P_loss = (self.P # power lost ontop of self.P
+                           * np.array([-0.1, -0.12, -0.15, 0, 0.1, 0.07, 0.06])
+                           )
+            
+        elif ch_type == 2:
+            # fast charger?
+            self.M = 5  # charging modes
+            self.P = np.array([-20, -5, 0, 5, 20])  # kW power
+            self.P_loss = (self.P # power lost ontop of self.P
+                           * np.array([-0.05, -0.08, 0, 0.08, 0.03])
+                           )
+            
+        else:
+            raise NotImplementedError("Only Charger Types \
+                                       0, 1 and 2 implemented.")

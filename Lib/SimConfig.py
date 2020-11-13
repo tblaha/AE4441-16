@@ -8,6 +8,6 @@ Created on Fri Nov 13 12:17:38 2020
 
 import numpy as np
 
-N = 2  # number of cars
-K = 3  # number of timeslots
-dt = 24/K * np.array([1, 1, 1])  # hours per timeslot
+N = 15  # number of cars
+K = 8  # number of timeslots
+dt = 24/K * np.ones(8) # hours per timeslot

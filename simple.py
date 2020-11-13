@@ -43,17 +43,18 @@ for i in range(cfg.N):
                            20,   # km driven per day
                            0.2,  # kWh/km during driving
                            40,   # kWh battery size
-                           10,   # max charger power
-                           [1, 0, 1],  # connection to grid per timeslot
+                           [1, 1, 0, 2, 2, 2, 0, 1],  # charger type connection to grid per timeslot
                            )
                 )
 
-X = list()  # will hold the solution later
+X = list()  # will hold the solutions later
+Y = list()  # will hold the solutions later
 for car in cars:  # for each car
 
     # add changing power variable for each timeslot to the model sm
-    Xi = car.create_vars(sm)
+    Xi, Yi = car.create_vars(sm)
     X.append(Xi)
+    Y.append(Yi)
     
     # add constraints to the model sm
     car.create_constrs(sm)
@@ -62,11 +63,11 @@ for car in cars:  # for each car
 #%% deal with power supply and grid
 
 # create grid object
-SimpleNet = grid.net([2, 4, 4, 2],  # kWh sustainable power max supply
-                     [1, 1, 1, 1],  # relative cost of sustainable power
-                     [10, 10, 10, 10], # kWh unsustainable power max supply
-                     [2, 2, 2, 2],  # relative cost of unsustainable power
-                     [0, 0, 0, 0],  # kWh invariant customer demand
+SimpleNet = grid.net([2, 2, 3, 4, 4, 3, 2, 2],  # kWh sustainable power max supply
+                     [1, 1, 1, 1, 1, 1, 1, 1],  # relative cost of sustainable power
+                     [10, 10, 10, 10, 10, 10, 10, 10], # kWh unsustainable power max supply
+                     [2, 2, 2, 2, 2, 2, 2, 2],  # relative cost of unsustainable power
+                     [0, 0, 0, 0, 0, 20, 0, 0],  # kWh invariant customer demand
                      )
 
 # add power supply variables PS and PU to the model sm
