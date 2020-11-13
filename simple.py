@@ -6,78 +6,88 @@ Created on Fri Nov 13 11:34:21 2020
 @author: tblaha
 """
 
+#%% reset python workspace
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
 
+
+#%% import modules
 import numpy as np
 
 import gurobipy as gp
 from gurobipy import GRB
 
-from SimpleLib import ev_sys
-from SimpleLib import grid
-from SimpleLib import config as cfg
+
+#%% import libraries with the class definitions and some config
+
+from Lib import ev_sys
+from Lib import grid
+from Lib import SimConfig as cfg
 
 
-# grid config
-ps_s = [2, 4, 4, 2]  # kWh sustainable power
-pu_s = [10, 10, 10, 10]  # kWh unsustainable power
-pd = [0, 0, 0, 0]  # kWh custumer demand
-
-cs = [1, 1, 1, 1]  # relative cost of sustainable power
-cu = [2, 2, 2, 2]  # relative cost of unsustainable power
-
-
-#%% create car objects
-
-# create list of (identical) car objects
-cars = list()
-for i in range(cfg.N):
-    cars.append(ev_sys.car(str(i),  # car name
-                           20,  # km driven per day
-                           0.2, # kWh/km during driving
-                           40,  # kWh battery size
-                           [1, 1, 0, 1],  # connection to grid per timeslot
-                           1,   # charger type
-                           )
-                )
-
-#%% create grid object
-SimpleNet = grid.net(ps_s, cs, pu_s, cu, pd)
-
-
-#%% setup model
+#%% create new model
 
 # create new model ("simple model") sm:
 sm = gp.Model("Simple Model")
 
-# deal with car variables and constraints
-X = list()
-Y = list()
-C_cars = list()
-for car in cars:
-    X_i, Y_i = car.create_vars(sm)
-    X.append(X_i)
-    Y.append(Y_i)
-    
-    C_cars.append(car.create_constrs(sm))
-    
-# deal with net variables and bounds and objective coefficients
-PS, PU = SimpleNet.create_vars_obj(sm)  # also generates objective coefficients
-
-# deal with net constraint
-C_node = SimpleNet.create_constrs(sm, X)
-
-# objective function is already generated in the net variable creation
-# so, only set sense:
+# set minimization:
 sm.ModelSense = 1   # -1 would be maximization
+
+
+#%% deal with car variables and constraints
+
+# create list of cfg.N identical car object instances
+cars = list()
+for i in range(cfg.N):
+    cars.append(ev_sys.car(str(i),  # car name
+                           20,   # km driven per day
+                           0.2,  # kWh/km during driving
+                           40,   # kWh battery size
+                           10,   # max charger power
+                           [1, 0, 1],  # connection to grid per timeslot
+                           )
+                )
+
+X = list()  # will hold the solution later
+for car in cars:  # for each car
+
+    # add changing power variable for each timeslot to the model sm
+    Xi = car.create_vars(sm)
+    X.append(Xi)
+    
+    # add constraints to the model sm
+    car.create_constrs(sm)
+
+
+#%% deal with power supply and grid
+
+# create grid object
+SimpleNet = grid.net([2, 4, 4, 2],  # kWh sustainable power max supply
+                     [1, 1, 1, 1],  # relative cost of sustainable power
+                     [10, 10, 10, 10], # kWh unsustainable power max supply
+                     [2, 2, 2, 2],  # relative cost of unsustainable power
+                     [0, 0, 0, 0],  # kWh invariant customer demand
+                     )
+
+# add power supply variables PS and PU to the model sm
+SimpleNet.create_vars_obj(sm)  # also generates objective coefficients
+
+# add the node flow constraint to the model sm
+SimpleNet.create_constrs(sm, cars)
 
 
 #%% solve
 
 sm.optimize()
 
+print()
+for Xi in X:
+    for Xij in Xi:
+        print(Xij)
+
 
 #%% clean up
 
+# maybe needed, maybe not...
 # gp.disposeDefaultEnv()
+
