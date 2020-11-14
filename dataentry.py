@@ -6,17 +6,17 @@ Created on Fri Nov 13 11:34:21 2020
 @author: tblaha
 """
 
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
+#from IPython import get_ipython
+#get_ipython().magic('reset -sf')
 
 import numpy as np
 
 import gurobipy as gp
 from gurobipy import GRB
 
-from SimpleLib import ev_sys
-from SimpleLib import grid
-from SimpleLib import config as cfg
+from DataEntryLib import ev_sys
+from DataEntryLib import grid
+from DataEntryLib import config as cfg
 
 
 # grid config
@@ -43,39 +43,39 @@ for i in range(cfg.N):
                 )
 
 #%% create grid object
-SimpleNet = grid.net(ps_s, cs, pu_s, cu, pd)
+AdvancedNet = grid.net(ps_s, cs, pu_s, cu, pd)
 
 
 #%% setup model
 
-# create new model ("simple model") sm:
-sm = gp.Model("Simple Model")
+# create new model ("advanced model") sm:
+am = gp.Model("Advanced Model")
 
 # deal with car variables and constraints
 X = list()
 Y = list()
 C_cars = list()
 for car in cars:
-    X_i, Y_i = car.create_vars(sm)
+    X_i, Y_i = car.create_vars(am)
     X.append(X_i)
     Y.append(Y_i)
     
-    C_cars.append(car.create_constrs(sm))
+    C_cars.append(car.create_constrs(am))
     
 # deal with net variables and bounds and objective coefficients
-PS, PU = SimpleNet.create_vars_obj(sm)  # also generates objective coefficients
+PS, PU = AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
 
 # deal with net constraint
-C_node = SimpleNet.create_constrs(sm, X)
+C_node = AdvancedNet.create_constrs(am, X)
 
 # objective function is already generated in the net variable creation
 # so, only set sense:
-sm.ModelSense = 1   # -1 would be maximization
+am.ModelSense = 1   # -1 would be maximization
 
 
 #%% solve
 
-sm.optimize()
+am.optimize()
 
 
 #%% clean up

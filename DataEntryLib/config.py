@@ -8,6 +8,6 @@ Created on Fri Nov 13 12:17:38 2020
 
 import numpy as np
 
-N = 3
+N = 4
 dt = np.array([6, 6, 6, 6]) # 6 hours per timeslot
 K = len(dt)
