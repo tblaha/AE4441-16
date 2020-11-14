@@ -17,6 +17,7 @@ from gurobipy import GRB
 from DataEntryLib import ev_sys
 from DataEntryLib import grid
 from DataEntryLib import config as cfg
+from DataEntryLib import cars as crs
 
 
 # grid config
@@ -32,13 +33,13 @@ cu = [2, 2, 2, 2]  # relative cost of unsustainable power
 
 # create list of (identical) car objects
 cars = list()
-for i in range(cfg.N):
+for i in range(0,sum(crs.car_stat['Amount owned'])):
     cars.append(ev_sys.car(str(i),  # car name
-                           20,  # km driven per day
-                           0.2, # kWh/km during driving
-                           40,  # kWh battery size
-                           [1, 1, 0, 1],  # connection to grid per timeslot
-                           1,   # charger type
+                           crs.cars_data['Distance Driven'][i],  # km driven per day
+                           crs.cars_data['kWh/km'][i]/10, # kWh/km during driving
+                           crs.cars_data['Battery size'][i],  # kWh battery size
+                           [crs.cars_data['Grid connection 1'][i],crs.cars_data['Grid connection 2'][i],crs.cars_data['Grid connection 3'][i], crs.cars_data['Grid connection 4'][i]],  # connection to grid per timeslot
+                           crs.cars_data['Charger type'][i],   # charger type
                            )
                 )
 
