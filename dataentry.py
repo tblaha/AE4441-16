@@ -21,7 +21,7 @@ from DataEntryLib import cars as crs
 
 
 # grid config
-ps_s = [2, 4, 4, 2]  # kWh sustainable power
+ps_s = [2000, 4000, 4000, 2000]  # kWh sustainable power
 pu_s = [10, 10, 10, 10]  # kWh unsustainable power
 pd = [0, 0, 0, 0]  # kWh custumer demand
 
@@ -33,14 +33,14 @@ cu = [2, 2, 2, 2]  # relative cost of unsustainable power
 
 # create list of (identical) car objects
 cars = list()
-for i in range(0,sum(crs.car_stat['Amount owned'])):
-    cars.append(ev_sys.car(str(i),  # car name
-                           crs.cars_data['Distance Driven'][i],  # km driven per day
-                           crs.cars_data['kWh/km'][i]/10, # kWh/km during driving
-                           crs.cars_data['Battery size'][i],  # kWh battery size
-                           [crs.cars_data['Grid connection 1'][i],crs.cars_data['Grid connection 2'][i],crs.cars_data['Grid connection 3'][i], crs.cars_data['Grid connection 4'][i]],  # connection to grid per timeslot
-                           crs.cars_data['Charger type'][i],   # charger type
-                           )
+for i in range(sum(crs.car_stat['Amount owned'])):
+    cars.append(  ev_sys.car(  str(i),  # car name
+                               crs.cars_data['Distance Driven'][i],  # km driven per day
+                               crs.cars_data['kWh/km'][i]/10, # kWh/km during driving
+                               crs.cars_data['Battery size'][i],  # kWh battery size
+                               [crs.cars_data['Grid connection 1'][i],crs.cars_data['Grid connection 2'][i],crs.cars_data['Grid connection 3'][i], crs.cars_data['Grid connection 4'][i]],  # connection to grid per timeslot
+                               crs.cars_data['Charger type'][i],   # charger type
+                               )
                 )
 
 #%% create grid object
