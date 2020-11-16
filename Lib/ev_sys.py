@@ -102,13 +102,13 @@ class car:
            name="C_" + self.name + "_E_net"
            )
         
-        for j in range(cfg.K):  # for each time slot j
+        for j in range(cfg.K - 1):  # for each time slot j
             # after each time step j, car battery may not go below E_min
             model.addConstr( 
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension of all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
-                    for jj in range(j)
+                    for jj in range(j + 1)
                     )
                 >= self.E_min,
                 name="C_" + self.name + "_" + str(j) + "_E_lb"
@@ -119,7 +119,7 @@ class car:
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension of all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
-                    for jj in range(j)
+                    for jj in range(j + 1)
                     )
                 <= self.E_max,
                 name="C_" + self.name + "_" + str(j) + "_E_ub"
