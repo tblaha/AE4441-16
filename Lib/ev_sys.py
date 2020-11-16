@@ -76,21 +76,24 @@ class car:
                     ),
                 name="C_" + self.name + "_" + str(j) + "_" + "P"
                 )
-            E_lb = model.addConstr( 
-               self.E_state + sum(self.Xs[jj] * cfg.dt[jj] for jj in range(j))
-                   >= self.E_min,
-               name="C_" + self.name + "_" + str(j) + "_" + "E_lb"
-               )
-            E_ub = model.addConstr( 
-               self.E_state + sum(self.Xs[jj] * cfg.dt[jj] for jj in range(j))
-                   <= self.E_max,
-               name="C_" + self.name + "_" + str(j) + "_" + "E_ub"
-               )
-            
             self.Cs_OOOM.append(OOOM)
             self.Cs_Power.append(Power)
-            self.Cs_E_lb.append(E_lb)
-            self.Cs_E_ub.append(E_ub)
+            
+            
+            if j < cfg.K - 1:
+                E_lb = model.addConstr( 
+                   self.E_state + sum(self.Xs[jj] * cfg.dt[jj] for jj in range(j+1))
+                       >= self.E_min,
+                   name="C_" + self.name + "_" + str(j) + "_" + "E_lb"
+                   )
+                E_ub = model.addConstr( 
+                   self.E_state + sum(self.Xs[jj] * cfg.dt[jj] for jj in range(j+1))
+                       <= self.E_max,
+                   name="C_" + self.name + "_" + str(j) + "_" + "E_ub"
+                   )
+                self.Cs_E_lb.append(E_lb)
+                self.Cs_E_ub.append(E_ub)
+
             
         self.E_net = model.addConstr( 
            sum(self.Xs[j] * cfg.dt[j] for j in range(cfg.K))

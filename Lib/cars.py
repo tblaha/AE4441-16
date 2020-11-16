@@ -14,15 +14,23 @@ current_entity = 0
 cars_data = pd.DataFrame({'Car Type': entities, 'Distance Driven': entities, 'kWh/km': entities, 'Battery size': entities, 'Grid connection 1': entities, 'Grid connection 2': entities, 'Grid connection 3': entities, 'Grid connection 4': entities,'Charger type': entities})
 
 for i in range(0,car_stat['Car Type'].size):
-    cars_data['Car Type'][current_entity:int(current_entity + car_stat['Amount owned'][i])] = car_stat['Car Type'][i]
-    cars_data['Battery size'][current_entity:int(current_entity + car_stat['Amount owned'][i])] = car_stat['Battery size'][i]
+    cars_data.loc[ 
+        current_entity:int(current_entity + car_stat['Amount owned'][i]),
+        'Car Type'
+        ] = car_stat['Car Type'][i]
+    
+    cars_data.loc[
+        current_entity:int(current_entity + car_stat['Amount owned'][i]),
+        'Battery size'
+        ] = car_stat['Battery size'][i]
+    
     current_entity = int(current_entity + car_stat['Amount owned'][i]) 
 
 for i in range(0,sum(car_stat['Amount owned'])):
-    cars_data['Distance Driven'][i] = random.randint(1,6)*10
-    cars_data['kWh/km'][i] = random.randint(9,14)
-    cars_data['Grid connection 1'][i] = int(random.randint(5,19)/10)
-    cars_data['Grid connection 2'][i] = int(random.randint(0,15)/10)
-    cars_data['Grid connection 3'][i] = int(random.randint(6,19)/10)
-    cars_data['Grid connection 4'][i] = int(random.randint(0,19)/10)
-    cars_data['Charger type'][i] = 1#random.randint(0,1)
+    cars_data.at[i, 'Distance Driven'] = random.randint(1,6)*10
+    cars_data.at[i, 'kWh/km'] = random.randint(9,14)
+    cars_data.at[i, 'Grid connection 1'] = int(random.randint(5,19)/10)
+    cars_data.at[i, 'Grid connection 2'] = int(random.randint(0,15)/10)
+    cars_data.at[i, 'Grid connection 3'] = int(random.randint(6,19)/10)
+    cars_data.at[i, 'Grid connection 4'] = int(random.randint(0,19)/10)
+    cars_data.at[i, 'Charger type'] = 1#random.randint(0,1)

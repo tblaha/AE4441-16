@@ -6,8 +6,8 @@ Created on Fri Nov 13 11:34:21 2020
 @author: tblaha
 """
 
-#from IPython import get_ipython
-#get_ipython().magic('reset -sf')
+# from IPython import get_ipython
+# get_ipython().magic('reset -sf')
 
 import numpy as np
 
@@ -22,7 +22,7 @@ from DataEntryLib import cars as crs
 
 # grid config
 ps_s = [2000, 4000, 4000, 2000]  # kWh sustainable power
-pu_s = [10, 10, 10, 10]  # kWh unsustainable power
+pu_s = [10000, 10000, 10000, 10000]  # kWh unsustainable power
 pd = [0, 0, 0, 0]  # kWh custumer demand
 
 cs = [1, 1, 1, 1]  # relative cost of sustainable power
