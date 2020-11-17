@@ -14,10 +14,10 @@ import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
 
-from DataEntryLib import ev_sys
-from DataEntryLib import grid
-from DataEntryLib import config as cfg
-from DataEntryLib import cars as crs
+from Lib import ev_sys
+from Lib import grid
+from Lib import SimConfig as cfg
+from Lib import cars as crs
 
 
 # grid config

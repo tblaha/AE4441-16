@@ -9,7 +9,7 @@ Created on Fri Nov 13 13:41:26 2020
 import numpy as np
 from gurobipy import GRB
 
-from DataEntryLib import config as cfg
+from Lib import SimConfig as cfg
 
 class net:
     def __init__(self,

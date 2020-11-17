@@ -9,7 +9,7 @@ Created on Fri Nov 13 10:33:12 2020
 import numpy as np
 from gurobipy import GRB
 
-from DataEntryLib import config as cfg
+from Lib import SimConfig as cfg
 
 class car:
     """ Electriv vehicle class characterizing owner and charger
