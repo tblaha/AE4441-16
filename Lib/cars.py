@@ -3,13 +3,21 @@ import numpy as np
 import random
 
 mtk = 1.609344
+bornholm_data = [19740,33.8,0.613,0.03]
 car_stat = pd.DataFrame({'Car Type': ['Tesla Model 3','Tesla Model Y','Tesla Model X', 'Chevy Bolt', 'Tesla Model S','NISSAN LEAF','Audi e-tron','BMW i3']} )
-car_stat['Amount owned'] = [4000,2000,1000,1000,500,500,500,500]
+car_stat['Amount owned'] = [8000,4000,2000,2000,1000,1000,1000,740]
 car_stat['Battery size'] = [50,50,100,60,100,40,95,42.2]
 car_stat['Range'] = [int(240*mtk),int(240*mtk),int(250*mtk),int(238*mtk),int(285*mtk),int(150*mtk),int(204*mtk),int(153*mtk)]
 car_stat['kWh/km'] = car_stat['Battery size']/car_stat['Range']
 entities = np.arange(0,sum(car_stat['Amount owned']))
 current_entity = 0
+
+
+driven_distance_data = pd.DataFrame({'Average distance driven [km/day]': np.arange(0,150,5)})
+driven_distance_data['Share of the cars [%]'] = [4,7,12,11,11,9,10,6,5,3,4,2,3,1,1,1,1,1,1,0,1,1,1,1,1,1,0,0,1,0]
+
+driven_time_data = pd.DataFrame({'Time of day [h]': np.arange(0,24)})
+driven_time_data['Share driven cars [%]'] = [0,0,0,0,0,1,3,5,3,3,4,4,4,4,4,6,7,5,3,2,1,2,1,0]
 
 cars_data = pd.DataFrame({'Car Type': entities, 'Distance Driven': entities, 'kWh/km': entities, 'Battery size': entities, 'Grid connection 1': entities, 'Grid connection 2': entities, 'Grid connection 3': entities, 'Grid connection 4': entities,'Charger type': entities})
 
