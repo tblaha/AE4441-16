@@ -6,32 +6,37 @@ Created on Fri Nov 13 11:34:21 2020
 @author: tblaha
 """
 
-# from IPython import get_ipython
-# get_ipython().magic('reset -sf')
+#%% reset python workspace
+from IPython import get_ipython
+get_ipython().magic('reset -sf')
 
+
+#%% import modules
 import numpy as np
 
 import gurobipy as gp
 from gurobipy import GRB
 
+
+#%% import libraries with the class definitions and some config
+
 from Lib import ev_sys
 from Lib import grid
 from Lib import SimConfig as cfg
-from Lib import cars as crs
 
 
-# grid config
-ps_s = [2000, 4000, 4000, 2000]  # kWh sustainable power
-pu_s = [10000, 10000, 10000, 10000]  # kWh unsustainable power
-pd = [0, 0, 0, 0]  # kWh custumer demand
+#%% create new model
 
-cs = [1, 1, 1, 1]  # relative cost of sustainable power
-cu = [2, 2, 2, 2]  # relative cost of unsustainable power
+# create new model ("simple model") sm:
+sm = gp.Model("Simple Model")
+
+# set minimization:
+sm.ModelSense = 1   # -1 would be maximization
 
 
-#%% create car objects
+#%% deal with car variables and constraints
 
-# create list of (identical) car objects
+# create list of cfg.N identical car object instances
 cars = list()
 for i in range(sum(crs.car_stat['Amount owned'])):
     cars.append(  ev_sys.car(  str(i),  # car name
@@ -43,42 +48,48 @@ for i in range(sum(crs.car_stat['Amount owned'])):
                                )
                 )
 
-#%% create grid object
-AdvancedNet = grid.net(ps_s, cs, pu_s, cu, pd)
+X = list()  # will hold the solutions later
+Y = list()  # will hold the solutions later
+for car in cars:  # for each car
 
-
-#%% setup model
-
-# create new model ("advanced model") sm:
-am = gp.Model("Advanced Model")
-
-# deal with car variables and constraints
-X = list()
-Y = list()
-C_cars = list()
-for car in cars:
-    X_i, Y_i = car.create_vars(am)
-    X.append(X_i)
-    Y.append(Y_i)
+    # add changing power variable for each timeslot to the model sm
+    Xi, Yi = car.create_vars(sm)
+    X.append(Xi)
+    Y.append(Yi)
     
-    C_cars.append(car.create_constrs(am))
-    
-# deal with net variables and bounds and objective coefficients
-PS, PU = AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
+    # add constraints to the model sm
+    car.create_constrs(sm)
 
-# deal with net constraint
-C_node = AdvancedNet.create_constrs(am, X)
 
-# objective function is already generated in the net variable creation
-# so, only set sense:
-am.ModelSense = 1   # -1 would be maximization
+#%% deal with power supply and grid
+
+# create grid object
+SimpleNet = grid.net([2, 2, 3, 4, 4, 3, 2, 2],  # kWh sustainable power max supply
+                     [1, 1, 1, 1, 1, 1, 1, 1],  # relative cost of sustainable power
+                     [10, 10, 10, 10, 10, 10, 10, 10], # kWh unsustainable power max supply
+                     [2, 2, 2, 2, 2, 2, 2, 2],  # relative cost of unsustainable power
+                     [0, 0, 0, 0, 0, 20, 0, 0],  # kWh invariant customer demand
+                     )
+
+# add power supply variables PS and PU to the model sm
+SimpleNet.create_vars_obj(sm)  # also generates objective coefficients
+
+# add the node flow constraint to the model sm
+SimpleNet.create_constrs(sm, cars)
 
 
 #%% solve
 
-am.optimize()
+sm.optimize()
+
+print()
+for Xi in X:
+    for Xij in Xi:
+        print(Xij)
 
 
 #%% clean up
 
+# maybe needed, maybe not...
 # gp.disposeDefaultEnv()
+
