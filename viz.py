@@ -1,60 +1,58 @@
 import numpy as np 
 import pandas as pd
-import networkx as nx
-import matplotlib as mpl        
-import matplotlib.pyplot as plt 
-import cartopy.crs as ccrs
-from cartopy.io.img_tiles import OSM
-
-
-plt.close('all')
-
-# extend of Bronholm in Geodetic Coordinates
-extent = [14.65, 15.2, 54.97, 55.31]
-
-
-fig = plt.figure(figsize=[6, 6])
-
-# plot open street map data
-request = OSM()
-ax = plt.axes(projection=request.crs)
-ax.set_extent(extent)
-ax.add_image(request, 10)  # zoom level 10
+from Lib import plotting as pt
 
 grid = pd.DataFrame(columns=["Long", "Lat", "Type", "Color", "Size"])
-grid.loc["nodeA"] = [15, 55.1, "60kV Station", "Orange", 9]
-grid.loc["nodeB"] = [14.7, 55.2, "60kV Station", "Orange", 9]
+grid = grid.astype({"Long": float, 
+                    "Lat": float, 
+                    "Type": str, 
+                    "Color": str, 
+                    "Size": float,
+                    })
+grid.loc["nodeA"] = [15, 55.1, "60kV Station", "Orange", 50]
+grid.loc["nodeB"] = [14.7, 55.2, "60kV Station", "Orange", 50]
+grid.loc["nodeC"] = [15.1, 55.2, "60kV Station", "Orange", 50]
 
-grid_conn = pd.DataFrame(columns=["conn1", "conn2"])
-grid_conn = grid_conn.append({"conn1":"nodeA", "conn2":"nodeB"}, ignore_index=True)
+grid_conn = pd.DataFrame(columns=["conn1", "conn2", "Cap", "time", "Load"])
+grid_conn = grid_conn.astype({"conn1": str, 
+                              "conn2": str, 
+                              "Cap": float, 
+                              "time": int, 
+                              "Load": float,
+                              })
 
-EV = pd.DataFrame(columns=["Long", "Lat", "Type", "Color", "Size", "grid", "time"])
-EV.loc["EV_1"] = [15.1, 55.15, "Car", "Blue", 9, "nodeA", 0]
-EV.loc["EV_2"] = [14.9, 55.2, "Car", "Blue", 9, "nodeA",  0]
-EV.loc["EV_3"] = [14.75, 55.1, "Car", "Blue", 9, "nodeB",  0]
+grid_conn.loc[1] = ["nodeA", "nodeB", 100, 0, 70]
+grid_conn.loc[2] = ["nodeA", "nodeC", 100, 0, 110]
+grid_conn.loc[3] = ["nodeB", "nodeC", 100, 0, -70]
+grid_conn.loc[4] = ["nodeA", "nodeB", 100, 1, 0]
+grid_conn.loc[5] = ["nodeA", "nodeC", 100, 1, 50]
+grid_conn.loc[6] = ["nodeB", "nodeC", 100, 1, -35]
+grid_conn.loc[7] = ["nodeA", "nodeB", 100, 2, 105]
+grid_conn.loc[8] = ["nodeA", "nodeC", 100, 2, 97]
+grid_conn.loc[9] = ["nodeB", "nodeC", 100, 2, -98]
 
-plt.plot(grid["Long"].to_numpy(), grid["Lat"].to_numpy(), 
-         transform=ccrs.PlateCarree(), marker="o", color="Orange", 
-         markersize=9, linestyle='')
 
-for index, row in grid_conn.iterrows():
-    long, lat = grid.loc[[row["conn1"], row["conn2"]], ["Long", "Lat"]].to_numpy().T
-    plt.plot(long, lat, transform=ccrs.PlateCarree(), marker="", color="Orange")
+outpath = "./plots/"
+fnamebase = "test"
+
+c=pt.netgif()
+c.plot_series(grid, grid_conn, outpath, fnamebase)
+
+
+
+
+# for index, row in EV.iterrows():
+#     longEV, latEV = row[["Long", "Lat"]].to_numpy()
+#     longGrid, latGrid = grid.loc[row["grid"], ["Long", "Lat"]].to_numpy()
+#     plt.plot(np.array([longEV, longGrid]),
+#              np.array([latEV, latGrid]),
+#              transform=ccrs.PlateCarree(),
+#              marker="", color="blue"
+#              )
     
-for index, row in EV.iterrows():
-    longEV, latEV = row[["Long", "Lat"]].to_numpy()
-    longGrid, latGrid = grid.loc[row["grid"], ["Long", "Lat"]].to_numpy()
-    plt.plot(np.array([longEV, longGrid]),
-             np.array([latEV, latGrid]),
-             transform=ccrs.PlateCarree(),
-             marker="", color="blue"
-             )
-    
-plt.plot(EV["Long"].to_numpy(), EV["Lat"].to_numpy(), 
-         transform=ccrs.PlateCarree(), marker="o", color="Blue", 
-         markersize=9, linestyle='')
+# plt.plot(EV["Long"].to_numpy(), EV["Lat"].to_numpy(), 
+#          transform=ccrs.PlateCarree(), marker="o", color="Blue", 
+#          markersize=9, linestyle='')
 
-
-#plt.show()
 
 
