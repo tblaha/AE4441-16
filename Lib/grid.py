@@ -7,10 +7,27 @@ Created on Fri Nov 13 13:41:26 2020
 """
 
 import numpy as np
+import pandas as pd
 from gurobipy import GRB
 
 # import the global config
 from Lib import SimConfig as cfg
+
+
+#%% grid data frame
+
+# generate grid connection and location
+grid = pd.DataFrame(columns=["Long", "Lat", "2SigRadius", "Type", "Color", "Size"])
+grid = grid.astype({"Long": float, 
+                    "Lat": float, 
+                    "2SigRadius": float,
+                    "Type": str, 
+                    "Color": str, 
+                    "Size": float,
+                    })
+grid.loc["Ronne"] = [14.7110, 55.0966, 3000, "60kV Station", "Orange", 50]
+grid.loc["Nexo"]  = [15.1291, 55.0585, 3000, "60kV Station", "Orange", 50]
+grid.loc["Tejn"]  = [14.8360, 55.2474, 3000, "60kV Station", "Orange", 50]
 
 
 #%% Network class definition

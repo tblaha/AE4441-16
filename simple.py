@@ -20,6 +20,7 @@ from gurobipy import GRB
 
 #%% import libraries with the class definitions and some config
 
+from Lib.cars import car_stat, cars_data, grid
 from Lib import ev_sys
 from Lib import grid
 from Lib import SimConfig as cfg

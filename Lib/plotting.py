@@ -10,8 +10,6 @@ Created on Wed Nov 18 21:19:54 2020
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
 
-
-
 import pandas as pd
 import numpy as np
 import imageio as io
@@ -160,7 +158,7 @@ class netgif():
         
         grid = self.grid
         
-        x1, y1 = grid.loc[EV["grid"], ["Long", "Lat"]].to_numpy().T
+        x1, y1 = grid.loc[EV["GridNode"], ["Long", "Lat"]].to_numpy().T
         x2, y2 = EV[["Long", "Lat"]].to_numpy().T
         cap = EV["Cap"].to_numpy()
         load = EV["Load"].to_numpy()
