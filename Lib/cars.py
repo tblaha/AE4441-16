@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import random
 
+#Random information
+#https://support.fastned.nl/hc/en-gb/sections/115000180588-Vehicles-charging-tips
+#https://www.myev.com/research/buyers-sellers-advice/comparing-all-2019-electric-vehicles
 mtk = 1.609344
 bornholm_data = [19740,33.8,0.613,0.03]
 car_stat = pd.DataFrame({'Car Type': ['Tesla Model 3','Tesla Model Y','Tesla Model X', 'Chevy Bolt', 'Tesla Model S','NISSAN LEAF','Audi e-tron','BMW i3']} )
@@ -9,6 +12,11 @@ car_stat['Amount owned'] = [8000,4000,2000,2000,1000,1000,1000,740]
 car_stat['Battery size'] = [50,50,100,60,100,40,95,42.2]
 car_stat['Range'] = [int(240*mtk),int(240*mtk),int(250*mtk),int(238*mtk),int(285*mtk),int(150*mtk),int(204*mtk),int(153*mtk)]
 car_stat['kWh/km'] = car_stat['Battery size']/car_stat['Range']
+car_stat['175 kW Charger'] = [140,140,140,120,140,0,120,0]
+car_stat['50 kW Charger'] = 8*[50]
+car_stat['Standard 3-phase'] = 8*[22]
+car_stat['Standard 1-phase'] = 8*[7]
+car_stat['Homecharging'] = 8*[3.6]
 entities = np.arange(0,sum(car_stat['Amount owned']))
 current_entity = 0
 count2 = 30
