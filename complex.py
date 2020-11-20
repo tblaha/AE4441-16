@@ -30,7 +30,15 @@ from Lib.cons_gen import cons_data_base, cons_data
 from Lib import cars as cs
 from Lib import grid as gd
 from Lib import SimConfig as cfg
-from Lib import plotting as pt
+
+try:
+    import cartopy
+    cartopy_exists = True
+    from Lib import plotting as pt
+except ImportError:
+    cartopy_exists = False
+
+
 
 
 #%% empty gurobi model
@@ -134,16 +142,17 @@ for i, l in enumerate(AdvancedNet.links):
 
 #%% plotting
 
-outpath = "./plots/"
-fnamebase = "test"
-
-map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
-# map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
-
-netplot = pt.netgif(map_extent, zoomlevel)  # Ronne
-netplot.plot_series(grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase)
-
-plt.close("all")
+if cartopy_exists:
+    outpath = "./plots/"
+    fnamebase = "test"
+    
+    map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
+    # map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
+    
+    netplot = pt.netgif(map_extent, zoomlevel)  # Ronne
+    netplot.plot_series(grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase)
+    
+    plt.close("all")
 
 
 
