@@ -8,6 +8,7 @@ Created on Fri Nov 13 12:17:38 2020
 
 import numpy as np
 
+
 #%% manual configuration
 
 # rng config
@@ -22,6 +23,10 @@ max_caps = {"Biomass": 15000,
             "Solar": 10000,
             "Cable": 30000,
             }
+
+# power cost
+cs = 1  # relative cost of sustainable power
+cu = 2  # relative cost of unsustainable power
 
 # consumer config kW
 cons_mean = 30000

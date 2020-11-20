@@ -51,7 +51,7 @@ class netgif():
         self._add_grid()
         
         # iterate over discrete times k
-        # k_array = np.unique(grid_conn["time"])
+        # k_array = np.unique(grid_conn["Time"])
         k_array = np.arange(cfg.K)
         times = np.zeros(cfg.K+1)
         times[1:] = np.cumsum(cfg.dt)
@@ -64,10 +64,10 @@ class netgif():
             for k in k_array:
                 
                 # add the meat of the plot
-                self._add_links(grid_conn.loc[grid_conn["time"] == k, :])
-                self._add_cars(EVs.loc[EVs["time"] == k, :])
-                self._add_pp(pp_data.loc[pp_data["time"] == k, :])
-                self._add_cons(cons_data.loc[cons_data["time"] == k, :])
+                self._add_links(grid_conn.loc[grid_conn["Time"] == k, :])
+                self._add_cars(EVs.loc[EVs["Time"] == k, :])
+                self._add_pp(pp_data.loc[pp_data["Time"] == k, :])
+                self._add_cons(cons_data.loc[cons_data["Time"] == k, :])
                 
                 # make colorbar
                 self.cb = plt.colorbar(self.grid_quivers)

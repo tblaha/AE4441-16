@@ -22,8 +22,12 @@ from gurobipy import GRB
 
 #%% import libraries with the class definitions and some config
 
-from Lib.cars import car_stat, cars_data, grid
-from Lib import ev_sys
+from Lib.cars_gen import car_stat, cars_data_base, cars_data
+from Lib.grid_gen import grid, grid_link_base, grid_link
+from Lib.pp_gen   import pp_data_base, pp_data
+from Lib.cons_gen import cons_data_base, cons_data
+
+from Lib import cars as cs
 from Lib import grid as gd
 from Lib import SimConfig as cfg
 from Lib import plotting as pt
@@ -48,7 +52,7 @@ for i in range(sum(car_stat['Amount owned'])):
     # figure out which lines in the cars_data frame belong to car i
     car_bool = cars_data["CarId"] == i
     
-    cars.append(ev_sys.car(
+    cars.append(cs.car(
         str(i),  # car name
         cars_data.loc[car_bool, 'Distance Driven'].iat[0],  # km driven per day
         cars_data.loc[car_bool, 'kWh/km'].iat[0], # kWh/km during driving
@@ -71,16 +75,19 @@ for car in cars:
 
 
 #%% grid config
-ps_s = 100*np.ones(cfg.K)  # kWh sustainable power
-pu_s = 500*np.ones(cfg.K)  # kWh unsustainable power
-p_d = 0*np.ones(cfg.K)  # kWh custumer demand
+# ps_s = 100*np.ones(cfg.K)  # kWh sustainable power
+# pu_s = 500*np.ones(cfg.K)  # kWh unsustainable power
+# p_d = 0*np.ones(cfg.K)  # kWh custumer demand
 
 cs = 1*np.ones(cfg.K)  # relative cost of sustainable power
 cu = 2*np.ones(cfg.K)  # relative cost of unsustainable power
 
 # create grid object
-AdvancedNet = gd.net(ps_s, cs, pu_s, cu, p_d)
+AdvancedNet = gd.net(grid, pp_data, cons_data, cs, cu)
 
+
+
+#%%
 # deal with net variables and bounds and objective coefficients
 AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
 
@@ -106,18 +113,18 @@ am.optimize()
 
 #%% dummy data: grid connection
 
-grid_conn = pd.DataFrame(columns=["conn1",
-                                  "conn2", 
-                                  "Cap",
-                                  "time",
-                                  "Load"]
-                         )
-grid_conn = grid_conn.astype({"conn1": str, 
-                              "conn2": str, 
-                              "Cap": float, 
-                              "time": int, 
-                              "Load": float,
-                              })
+# grid_conn = pd.DataFrame(columns=["conn1",
+#                                   "conn2", 
+#                                   "Cap",
+#                                   "time",
+#                                   "Load"]
+#                          )
+# grid_conn = grid_conn.astype({"conn1": str, 
+#                               "conn2": str, 
+#                               "Cap": float, 
+#                               "time": int, 
+#                               "Load": float,
+#                               })
 
 # grid_conn.loc[1] = ["Ronne", "Nexo", 100, 0, 70]
 # grid_conn.loc[2] = ["Ronne", "Tejn", 100, 0, 110]
@@ -154,7 +161,7 @@ map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
 # map_extent = [14.66, 14.76, 55.07, 55.125]; zoomlevel = 13; # Ronne
 
 c = pt.netgif(map_extent, zoomlevel)  # Ronne
-c.plot_series(grid, grid_conn, cars_data, gd.pp_data, gd.cons_data, outpath, fnamebase)
+c.plot_series(grid, grid_link, cars_data, pp_data, cons_data, outpath, fnamebase)
 
 plt.close("all")
 

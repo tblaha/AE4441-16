@@ -1,192 +1,181 @@
-import pandas as pd
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov 13 10:33:12 2020
+
+@author: tblaha
+"""
+
 import numpy as np
-from numpy import random as npr
-from Lib.constants import MTK, RE
-from Lib.grid import grid
+from gurobipy import GRB
+
 from Lib import SimConfig as cfg
 
-npr.seed(cfg.seed)
 
-
-def rel_assign(w, N):
-    # w: relative weights categories (list or np array)
-    # N: target number of items assigned
-    # a: assignment as integer numpy array
-    rw = w / np.sum(w)
-
-    lamb = 1
-    while True:
-        # basic concept: try scaling the cro by an integer and check resulting 
-        # distribution of cars. Keep raising the integer lamb and once we 
-        # overshoot the cfg.N target --> decrement lamb again and randomly add 
-        # the missing ones from 1 up to len(cro) types
-        # 
-        # I haven't checked the math, but I believe that the amount of cars to be
-        # added is always less or equal len(cro) and thus the code below should 
-        # never fail.
+#%% Car class
+class car:
+    """ Electriv vehicle class characterizing owner and charger
+    """
+    def __init__(self, 
+                 name,      # string for identifying the car
+                 s_day,     # km driven during the day
+                 E_eff,     # kWh electrical energy used per km
+                 E_bat,     # battery size in kWh
+                 c_conn,    # list of charger connections to grid
+                 ):
+        """
+        name should be a string
+        s_day, E_eff, E_bat, P_max should be scalars
+        c_conn should be a list: 0 if no charger, 1-C when the connected
+            """
         
-        Nc = np.sum(np.floor(lamb * rw)).astype(int)
-        if Nc <= N:
-            lamb += 1
-        else:
-            lamb -= 1
-            a = np.floor(lamb * rw).astype(int)
-            pN = np.sum(a)
+        # saving input in internal memory 
+        self.name  = name
+        self.s_day = s_day  # km/day
+        self.E_eff = E_eff  # kWh/km
+        
+        # set energy limits to within 10% - 90% of nominal battery capacity
+        self.E_max = 0.9*E_bat  # kWh
+        self.E_min = 0.1*E_bat  # kWh
+        
+        # Battery charge at beginning of the day
+        self.E_state = 0.5*(self.E_max + self.E_min)
+        
+        # instantiate chargers 
+        self.c_conn = c_conn
+        
+        self.ch = list()
+        for j in range(cfg.K):
+            self.ch.append(charger(self.c_conn[j]))
+                        
+        
+#%% Variables and Bounds
+    def create_vars(self, 
+                    model,  # the gurobi model to which to add the vars to
+                    ):
+        """ Add the variables for the EVs to model:
+        Xij: the charger powers for each time slot j
+        Yijk: the binarys describing the charging setting to use at instant j
+            """
+        
+        self.Xi = list()
+        self.Yi = list()
+        for j in range(cfg.K):  # for each time slot j:
             
-            if (N - pN) > len(rw):
-                raise("Amount of items to be randomly added too large")
-                    
-            if pN < N:
-                # scaling cro didn't fully work, we have to randomly add a few cars
-                r = np.arange(len(rw))
-                npr.shuffle(r)
-                
-                a[r[:(N - pN)]] += 1
-            elif pN == N:
-                pass # do nothing
-            else:
-                raise("something went wrong with dynamic assignment wrong")
-            return a
-
-
-#%% car_stat frame
-car_stat = pd.DataFrame(
-    {'Car Type': ['Tesla Model 3','Tesla Model Y','Tesla Model X','Chevy Bolt',
-                  'Tesla Model S','NISSAN LEAF','Audi e-tron','BMW i3'
-                  ]}
-    )
-car_stat['Battery size'] = [50, 50, 100, 60, 100, 40, 95, 42.2]
-car_stat['Range'] = MTK * np.array([240, 240, 250, 238, 285, 150, 204, 153])
-car_stat['kWh/km'] = car_stat['Battery size']/car_stat['Range']
-
-car_relative_ownership = np.array([4, 2, 2, 1, 1, 8, 4, 4])
-
-car_stat['Amount owned'] = rel_assign(car_relative_ownership, cfg.N)
-
-assert(sum(car_stat['Amount owned']) == cfg.N)
-
-
-
-#%% car_data frame --> timeslot-independent attributes
-
-entities = np.arange(0, sum(car_stat['Amount owned']))
-current_entity = 0
-
-cars_data = pd.DataFrame({'CarId': entities, 
-                          'Car Type': entities, 
-                          'Distance Driven': entities,
-                          'kWh/km': entities, 
-                          'Battery size': entities,
-                          'time': entities,
-                          'GridConn': entities,
-                          'Long': entities,
-                          'Lat': entities,
-                          'Charger type': entities,
-                          })
-cars_data = cars_data.astype({'CarId': int, 
-                              'Car Type': str, 
-                              'Distance Driven': float,
-                              'kWh/km': float,
-                              'Battery size': float,
-                              'time': int,
-                              'GridConn': str,
-                              'Long': float,
-                              'Lat': float,
-                              'Charger type': int,
-                              })
-
-# car type
-for i in range(0,car_stat['Car Type'].size):
-    # car type
-    cars_data.loc[ 
-        current_entity:int(current_entity + car_stat['Amount owned'][i]),
-        'Car Type'
-        ] = car_stat['Car Type'][i]
-    
-    # battery size
-    cars_data.loc[
-        current_entity:int(current_entity + car_stat['Amount owned'][i]),
-        'Battery size'
-        ] = car_stat['Battery size'][i]
-    
-    current_entity = int(current_entity + car_stat['Amount owned'][i]) 
-
-# car distance and efficiency
-for i in range(0,sum(car_stat['Amount owned'])):
-    # randomize efficiency and distance driven
-    cars_data.at[i, 'Distance Driven'] = npr.randint(1,6)*10
-    # cars_data.at[i, 'kWh/km'] = npr.randint(9,14) # sounds way too high!
-    cars_data.at[i, 'kWh/km'] = npr.randint(9,14) * 2/100
-
-cars_data["Color"] = "Blue"
-cars_data["Size"] = 30
-
-
-
-#%% car_data frame --> time dependent attributes
-
-# how many grid nodes?
-G = len(grid)
-
-# Repeat entries such that we have one per time slot per car
-cars_data = cars_data.loc[
-    cars_data.index.repeat(cfg.K)
-    ].reset_index(drop=True)
-
-# assign the cars to the grid nodes
-rel_car_distribution  = [2, 2, 1]  # Ronne, Nexo, Tejn. hard coded for now 
-car_distr = rel_assign(rel_car_distribution, cfg.N)
-assert(sum(car_stat['Amount owned']) == cfg.N)
-
-# stupid hack to get the array describing how many go to which city in another
-# format so that it can be used for indexing. For instance:
-# car_distr == [4 4 3]  --> car_alloc = [0 0 0 0 1 1 1 1 2 2 2]
-car_alloc = [k for k in range(G) for l in range(car_distr[k])]
-
-# randomize which cars will be assigned
-npr.shuffle(car_alloc)
-
-# for each car, do:
-for i, c in enumerate(car_alloc):
-    # figure out which lines in the cars_data frame belong to car i
-    car_bool = cars_data["CarId"] == i
-    
-    # add timeslot integers
-    cars_data.loc[car_bool, ["time"]] = np.arange(cfg.K).astype(int)
+            # CONTINUOUS charging power variable
+            # this does the heavy lifting of adding to model
+            x = model.addVar(
+                lb = min(self.ch[j].P),
+                ub = max(self.ch[j].P),
+                obj = 0.0, # not in obj directly (see create_constrs of grid.py)
+                vtype=GRB.CONTINUOUS,
+                name="X_" + self.name + "_" + str(j)
+                )
+            
+            # this is only for later use of the vars in the constraints
+            self.Xi.append(x)
+            
+            # binary charging setting mode variables
+            Yij = list()
+            for k in range(self.ch[j].M):
+                y = model.addVar(
+                    vtype=GRB.BINARY,
+                    name="Y_" + self.name + "_" + str(j) + "_" + str(k)
+                    )
+                Yij.append(y)
+            
+            self.Yi.append(Yij)
+            
+        return self.Xi, self.Yi
     
     
-    ######## add grid connection names to cars_data
-    # figure out what the grid nodes are called that have been assigned in the 
-    # car_alloc array that has been randomized by npr.shuffle
-    grid_idxes = grid.index[c]
-    
-    # add those grid node names to the cars_data frame
-    cars_data.loc[car_bool, "GridConn"] = grid_idxes
-    
-    
-    ######### randomize coordinate locations
-    # we need:
-    rad = grid.loc[grid_idxes, "2SigRadius"]           # 95.7% radius in m
-    long, lat = grid.loc[grid_idxes, ["Long", "Lat"]]  # coordinates
-    
-    # bi-variate normal distribution with mean and covariance matrix
-    mu = np.array([long, lat])
-    # convert 2 sigma radius in m to degrees long and lat
-    sx, sy = (rad/2  # convert 2 sigma to 1 sigma
-        / (RE * np.pi/180  # one arc-degree on Earth's surface
-           * np.array([np.cos(lat*np.pi/180),  # correct for parallels getting 
-                                               # shorter near poles
-                       1])
-              ))
-    # covariance matrix with 0 correlation
-    cov = np.diag(np.array([sx, sy])**2)
-    
-    # draw from multivariate normal
-    cars_data.loc[car_bool, ["Long", "Lat"]]\
-        = npr.multivariate_normal(mu, cov, size=1)[0]
-    
-    
-    ######## charger connections during the timeslots
-    cars_data.loc[car_bool, ["Charger type"]] = 1  # for now
-    
+#%% Constraints
+    def create_constrs(self, 
+                       model,  # the gurobi model to which to add the constrs
+                       ):
+        
+        ## Charging power selection
+        ###############################################
+        for j in range(cfg.K):  # for each time slot j
+            # Discrete charging power: OOOM value constraint, such that exactly
+            # one charging mode is selected for all times j
+            model.addConstr(
+                sum(self.Yi[j]) == 1, # sum of all binarys is 1
+                name="C_" + self.name + "_" + str(j) + "_OOOM"
+                )
+            
+            # Select charging power from the M possible modes. 
+            # Power = Yij-binarys dotproduct charging power list
+            model.addConstr(
+                self.Xi[j] == self.Yi[j] @ self.ch[j].P,
+                name="C_" + self.name + "_" + str(j) + "_Pbat"
+                )
+        
+        
+        ## Resulting battery energy constraints 
+        ################################################
+        
+        # for each car, the net energy supplied to the battery over the day
+        # must be positive; so that we cannot end up with a car that is 
+        # drained more than at the start of the day
+        model.addConstr(
+            sum( # sum of list-comprehension of all time slots j
+                self.Xi[j] * cfg.dt[j] # Bat energy changed in timeslot j
+                for j in range(cfg.K)
+                )
+               >= self.E_eff * self.s_day,
+           name="C_" + self.name + "_E_net"
+           )
+        
+        for j in range(cfg.K - 1):  # for each time slot j
+            # after each time step j, car battery may not go below E_min
+            model.addConstr( 
+                self.E_state  # initial battery energy
+                + sum( # sum of list-comprehension of all time slots UP UNTIL j
+                    self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
+                    for jj in range(j+1)
+                    )
+                >= self.E_min,
+                name="C_" + self.name + "_" + str(j) + "_E_lb"
+                )
+            
+            # after each time step j, car battery may not go above E_max
+            model.addConstr(  
+                self.E_state  # initial battery energy
+                + sum( # sum of list-comprehension of all time slots UP UNTIL j
+                    self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
+                    for jj in range(j+1)
+                    )
+                <= self.E_max,
+                name="C_" + self.name + "_" + str(j) + "_E_ub"
+                )
 
+
+#%% Charger types
+class charger:
+    def __init__(self, ch_type):
+        if ch_type == 0:
+            # no charger
+            self.M = 1
+            self.P = np.array([0])
+            self.P_loss = self.P
+            
+        elif ch_type == 1:
+            # home charger?
+            self.M = 7  # charging modes
+            self.P = np.array([-11, -5, -2, 0, 2, 5, 11])  # kW power
+            self.P_loss = (self.P # power lost ontop of self.P
+                           * np.array([-0.1, -0.12, -0.15, 0, 0.1, 0.07, 0.06])
+                           )
+            
+        elif ch_type == 2:
+            # fast charger?
+            self.M = 5  # charging modes
+            self.P = np.array([-20, -5, 0, 5, 20])  # kW power
+            self.P_loss = (self.P # power lost ontop of self.P
+                           * np.array([-0.05, -0.08, 0, 0.08, 0.03])
+                           )
+            
+        else:
+            raise NotImplementedError("Only Charger Types \
+                                       0, 1 and 2 implemented.")

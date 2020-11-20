@@ -12,13 +12,13 @@ from Lib.grid import pp_data, cons_data
 from matplotlib import pyplot as plt
 
 plt.close("all")
-fig, axs = plt.subplots(2, 1, constrained_layout=True, figsize=(8,8))
+fig, axs = plt.subplots(2, 1, constrained_layout=True, figsize=(8, 8))
 
 
 #%% verify Power Plant Capacities
 
 
-power_sums = pp_data.groupby(["Type", "Time"])["Cap"].sum()
+power_sums = pp_data.groupby(["Type", "time"])["Cap"].sum()
 
 for key, val in cfg.max_caps.items():
     axs[0].plot(cfg.t, power_sums.loc[key], label=key)
@@ -39,7 +39,7 @@ for gridnode in pd.unique(cons_data["GridConn"]):
                 label=gridnode,
                 )
 
-cons_sums = cons_data.groupby(["Time"])["Load"].sum()
+cons_sums = cons_data.groupby(["time"])["Load"].sum()
 axs[1].plot(cfg.t, cons_sums, label="Consumer Demand")
 
 axs[1].legend(fontsize=12)
