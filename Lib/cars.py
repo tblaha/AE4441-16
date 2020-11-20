@@ -61,7 +61,6 @@ car_stat['kWh/km'] = car_stat['Battery size']/car_stat['Range']
 
 car_relative_ownership = np.array([4, 2, 2, 1, 1, 8, 4, 4])
 
-            
 car_stat['Amount owned'] = rel_assign(car_relative_ownership, cfg.N)
 
 assert(sum(car_stat['Amount owned']) == cfg.N)
@@ -79,7 +78,7 @@ cars_data = pd.DataFrame({'CarId': entities,
                           'kWh/km': entities, 
                           'Battery size': entities,
                           'time': entities,
-                          'GridNode': entities,
+                          'GridConn': entities,
                           'Long': entities,
                           'Lat': entities,
                           'Charger type': entities,
@@ -90,7 +89,7 @@ cars_data = cars_data.astype({'CarId': int,
                               'kWh/km': float,
                               'Battery size': float,
                               'time': int,
-                              'GridNode': str,
+                              'GridConn': str,
                               'Long': float,
                               'Lat': float,
                               'Charger type': int,
@@ -162,7 +161,7 @@ for i, c in enumerate(car_alloc):
     grid_idxes = grid.index[c]
     
     # add those grid node names to the cars_data frame
-    cars_data.loc[car_bool, "GridNode"] = grid_idxes
+    cars_data.loc[car_bool, "GridConn"] = grid_idxes
     
     
     ######### randomize coordinate locations

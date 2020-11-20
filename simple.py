@@ -150,11 +150,11 @@ for i, car in enumerate(cars):
 outpath = "./plots/"
 fnamebase = "test"
 
-# map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
-map_extent = [14.66, 14.76, 55.07, 55.125]; zoomlevel = 13; # Ronne
+map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
+# map_extent = [14.66, 14.76, 55.07, 55.125]; zoomlevel = 13; # Ronne
 
 c = pt.netgif(map_extent, zoomlevel)  # Ronne
-c.plot_series(grid, grid_conn, cars_data, outpath, fnamebase)
+c.plot_series(grid, grid_conn, cars_data, gd.pp_data, gd.cons_data, outpath, fnamebase)
 
 plt.close("all")
 

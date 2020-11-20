@@ -41,8 +41,9 @@ pp_data = pd.DataFrame(columns=["Long",
                                 "GridConn",
                                 "Color",
                                 "Size",
-                                "Time",
+                                "time",
                                 "Cap",
+                                "Load",
                                 ])
 
 pp_data = pp_data.astype({"Long": float, 
@@ -52,18 +53,19 @@ pp_data = pp_data.astype({"Long": float,
                           "GridConn": str,
                           "Color": str,
                           "Size": float, 
-                          "Time": int,
+                          "time": int,
                           "Cap": float,
+                          "Load": float,
                           })
 
-pp_data.loc["Biomass"]    = [14.6963, 55.0938, "Biomass", "sustainable",   "Ronne", "Green", 30, 0, 0]
-pp_data.loc["WindWest"]   = [14.7491, 55.0809, "Wind",    "sustainable",   "Ronne", "Green", 30, 0, 0]
-pp_data.loc["WindNorth"]  = [14.7564, 55.2552, "Wind",    "sustainable",   "Tejn",  "Green", 30, 0, 0]
-pp_data.loc["WindEast"]   = [15.0928, 55.0715, "Wind",    "sustainable",   "Nexo",  "Green", 30, 0, 0]
-pp_data.loc["SolarWest"]  = [14.7241, 55.1312, "Solar",   "sustainable",   "Ronne", "Green", 30, 0, 0]
-pp_data.loc["SolarNorth"] = [14.8539, 55.2314, "Solar",   "sustainable",   "Tejn",  "Green", 30, 0, 0]
-pp_data.loc["SolarEast"]  = [15.0877, 55.0408, "Solar",   "sustainable",   "Nexo",  "Green", 30, 0, 0]
-pp_data.loc["Cable"]      = [14.6898, 55.1884, "Cable",   "unsustainable", "Ronne", "Red",   30, 0, 0]
+pp_data.loc["Biomass"]    = [14.6963, 55.0938, "Biomass", "sustainable",   "Ronne", "Green", 30, 0, 0, 0]
+pp_data.loc["WindWest"]   = [14.7491, 55.0809, "Wind",    "sustainable",   "Ronne", "Green", 30, 0, 0, 0]
+pp_data.loc["WindNorth"]  = [14.7564, 55.2552, "Wind",    "sustainable",   "Tejn",  "Green", 30, 0, 0, 0]
+pp_data.loc["WindEast"]   = [15.0928, 55.0815, "Wind",    "sustainable",   "Nexo",  "Green", 30, 0, 0, 0]
+pp_data.loc["SolarWest"]  = [14.7241, 55.1312, "Solar",   "sustainable",   "Ronne", "Green", 30, 0, 0, 0]
+pp_data.loc["SolarNorth"] = [14.8539, 55.2314, "Solar",   "sustainable",   "Tejn",  "Green", 30, 0, 0, 0]
+pp_data.loc["SolarEast"]  = [15.0877, 55.0408, "Solar",   "sustainable",   "Nexo",  "Green", 30, 0, 0, 0]
+pp_data.loc["Cable"]      = [14.6898, 55.1884, "Cable",   "unsustainable", "Ronne", "Red",   30, 0, 0, 0]
 
 
 
@@ -91,7 +93,7 @@ cap_distr = {"Biomass": np.ones(cfg.K),
 for key, val in cfg.max_caps.items():
     pp_bool = pp_data["Type"] == key
     
-    pp_data.loc[pp_bool, "Time"] = np.tile(np.arange(cfg.K), pp_num[key])
+    pp_data.loc[pp_bool, "time"] = np.tile(np.arange(cfg.K), pp_num[key])
     pp_data.loc[pp_bool, "Cap"] = (
         cfg.max_caps[key] # max capacity 
         * np.tile(cap_distr[key] / np.max(cap_distr[key]), # normalized rel cap
@@ -109,7 +111,8 @@ cons_data = pd.DataFrame(columns=["Long",
                                   "Color",
                                   "RelCons",
                                   "Size",
-                                  "Time",
+                                  "Peak",
+                                  "time",
                                   "Load",
                                   ])
 cons_data = cons_data.astype({"Long": float, 
@@ -118,22 +121,25 @@ cons_data = cons_data.astype({"Long": float,
                               "Color": str,
                               "RelCons": float, 
                               "Size": float, 
-                              "Time": int,
+                              "Peak": float,
+                              "time": int,
                               "Load": float,
                               })
 
 for index, row in grid.iterrows():
     gc_loc = row[["Long", "Lat"]].to_numpy()
-    center_vector = (np.array([14.9291, 55.1146]) - gc_loc)
-    dem_loc = gc_loc + np.linalg.norm(center_vector) * 0.05
+    centre_vector = (np.array([14.9291, 55.1146]) - gc_loc)
+    dem_loc = gc_loc + centre_vector / np.linalg.norm(centre_vector) * 0.025
     
     cons_data.loc[index, ["Long", "Lat"]] = dem_loc
     cons_data.loc[index, ["GridConn"]] = index
     cons_data.loc[index, ["Color", "RelCons", "Size", "Time", "Load"]] \
         = ["Purple", 1, 30, 0, 0]
+    
 
 # normalize Relative Consumption
 cons_data["RelCons"] = cons_data["RelCons"] / cons_data["RelCons"].sum()
+cons_data["Peak"] = cfg.cons_peak * cons_data["RelCons"]
 
 
 
@@ -168,7 +174,7 @@ for index, row in grid.iterrows():
     cons_bool = cons_data["GridConn"] == index
     local_cons = cons_data.loc[cons_bool, "RelCons"].iat[0]
     
-    cons_data.loc[cons_bool, "Time"] = np.arange(cfg.K)
+    cons_data.loc[cons_bool, "time"] = np.arange(cfg.K)
     cons_data.loc[cons_bool, "Load"] = local_cons * tot_cons_dem
 
 

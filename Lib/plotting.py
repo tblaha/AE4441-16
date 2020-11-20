@@ -6,10 +6,6 @@ Created on Wed Nov 18 21:19:54 2020
 @author: tblaha
 """
 
-#% reset python workspace
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
-
 import pandas as pd
 import numpy as np
 import imageio as io
@@ -43,7 +39,7 @@ class netgif():
         
     
     
-    def plot_series(self, grid, grid_conn, EVs, outpath, fnamebase):
+    def plot_series(self, grid, grid_conn, EVs, pp_data, cons_data, outpath, fnamebase):
         self.grid = grid
         
         
@@ -70,6 +66,8 @@ class netgif():
                 # add the meat of the plot
                 self._add_links(grid_conn.loc[grid_conn["time"] == k, :])
                 self._add_cars(EVs.loc[EVs["time"] == k, :])
+                self._add_pp(pp_data.loc[pp_data["time"] == k, :])
+                self._add_cons(cons_data.loc[cons_data["time"] == k, :])
                 
                 # make colorbar
                 self.cb = plt.colorbar(self.grid_quivers)
@@ -170,7 +168,7 @@ class netgif():
         
         grid = self.grid
         
-        x1, y1 = grid.loc[EV["GridNode"], ["Long", "Lat"]].to_numpy().T
+        x1, y1 = grid.loc[EV["GridConn"], ["Long", "Lat"]].to_numpy().T
         x2, y2 = EV[["Long", "Lat"]].to_numpy().T
         cap = EV["Cap"].to_numpy()
         load = EV["Load"].to_numpy()
@@ -199,10 +197,90 @@ class netgif():
         
         
         
+    def _add_pp(self, pp_data):
+        
+        grid = self.grid
+        
+        x1, y1 = grid.loc[pp_data["GridConn"], ["Long", "Lat"]].to_numpy().T
+        x2, y2 = pp_data[["Long", "Lat"]].to_numpy().T
+        
+        cap = pp_data["Cap"].to_numpy()
+        load = pp_data["Load"].to_numpy()
+        
+        x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
+        
+        self.pp_scatter = \
+            self.ax.scatter(pp_data["Long"].to_numpy(), 
+                            pp_data["Lat"].to_numpy(), 
+                            s=pp_data["Size"].to_numpy(),
+                            c=pp_data["Color"],
+                            transform=ccrs.PlateCarree(), 
+                            marker="o",
+                            linewidths=1,
+                            edgecolors="black"
+                            )
+        
+        self.pp_quivers   = self.ax.quiver(x,
+                                           y,
+                                           u,
+                                           v,
+                                           pload,
+                                           angles='xy',
+                                           scale_units='xy',
+                                           scale=8.98*1e-6,
+                                           width=0.005,
+                                           linewidth=0.5,
+                                           transform=ccrs.PlateCarree(), 
+                                           cmap=self.cmap,
+                                           norm=self.norm,
+                                           )
+        
+    def _add_cons(self, cons_data):
+        
+        grid = self.grid
+        
+        x1, y1 = grid.loc[cons_data["GridConn"], ["Long", "Lat"]].to_numpy().T
+        x2, y2 = cons_data[["Long", "Lat"]].to_numpy().T
+        
+        peak = cons_data["Peak"].to_numpy()
+        load = cons_data["Load"].to_numpy()
+        
+        x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, peak, load)
+        
+        self.cons_scatter = \
+            self.ax.scatter(cons_data["Long"].to_numpy(), 
+                            cons_data["Lat"].to_numpy(), 
+                            s=cons_data["Size"].to_numpy(),
+                            c=cons_data["Color"],
+                            transform=ccrs.PlateCarree(), 
+                            marker="o",
+                            linewidths=1,
+                            edgecolors="black"
+                            )
+        
+        self.cons_quivers = self.ax.quiver(x,
+                                           y,
+                                           u,
+                                           v,
+                                           pload,
+                                           angles='xy',
+                                           scale_units='xy',
+                                           scale=8.98*1e-6,
+                                           width=0.005,
+                                           linewidth=0.5,
+                                           transform=ccrs.PlateCarree(), 
+                                           cmap=self.cmap,
+                                           norm=self.norm,
+                                           )
+        
     def _clean_plot(self):
         self.cb.remove()
         self.grid_quivers.remove()
         self.car_quivers.remove()
+        self.pp_scatter.remove()
+        self.pp_quivers.remove()
+        self.cons_scatter.remove()
+        self.cons_quivers.remove()
 
         
 
