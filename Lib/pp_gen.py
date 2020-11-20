@@ -16,7 +16,8 @@ from Lib import SimConfig as cfg
 
 #%% powerplant data frame --> timeslot-independent attributes
 
-pp_data_base = pd.DataFrame(columns=["Name",
+pp_data_base = pd.DataFrame(columns=["PPId",
+                                     "Name",
                                      "Long", 
                                      "Lat",
                                      "Type",
@@ -26,31 +27,32 @@ pp_data_base = pd.DataFrame(columns=["Name",
                                      "Size",
                                      ])
 
-pp_data_base.loc["Biomass"]    = ["Biomass",    14.6963, 55.0938, "Biomass", 
-                                  "sustainable", "Ronne", "Brown", 30]
+pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
+                                  "sustainable", "Ronne", "Brown", 80]
 
-pp_data_base.loc["WindWest"]   = ["WindWest",   14.7491, 55.0809, "Wind",
-                                  "sustainable", "Ronne", "White", 30]
+pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
+                                  "sustainable", "Ronne", "White", 80]
 
-pp_data_base.loc["WindNorth"]  = ["WindNorth",  14.7564, 55.2552, "Wind",
-                                  "sustainable", "Tejn",  "White", 30]
+pp_data_base.loc["WindNorth"]  = [2, "WindNorth",  14.7564, 55.2552, "Wind",
+                                  "sustainable", "Tejn",  "White", 80]
 
-pp_data_base.loc["WindEast"]   = ["WindEast",   15.0928, 55.0815, "Wind",
-                                  "sustainable", "Nexo",  "White", 30]
+pp_data_base.loc["WindEast"]   = [3, "WindEast",   15.0928, 55.0815, "Wind",
+                                  "sustainable", "Nexo",  "White", 80]
 
-pp_data_base.loc["SolarWest"]  = ["SolarWest",  14.7241, 55.1312, "Solar",
-                                  "sustainable", "Ronne", "Orange", 30]
+pp_data_base.loc["SolarWest"]  = [4, "SolarWest",  14.7241, 55.1312, "Solar",
+                                  "sustainable", "Ronne", "Orange", 80]
 
-pp_data_base.loc["SolarNorth"] = ["SolarNorth", 14.8539, 55.2314, "Solar",
-                                  "sustainable", "Tejn",  "Orange", 30]
+pp_data_base.loc["SolarNorth"] = [5, "SolarNorth", 14.8539, 55.2314, "Solar",
+                                  "sustainable", "Tejn",  "Orange", 80]
 
-pp_data_base.loc["SolarEast"]  = ["SolarEast",  15.0877, 55.0408, "Solar",
-                                  "sustainable", "Nexo",  "Orange", 30]
+pp_data_base.loc["SolarEast"]  = [6, "SolarEast",  15.0877, 55.0408, "Solar",
+                                  "sustainable", "Nexo",  "Orange", 80]
 
-pp_data_base.loc["Cable"]      = ["Cable",      14.6898, 55.1884, "Cable",
-                                  "unsustainable", "Ronne", "Black", 30]
+pp_data_base.loc["Cable"]      = [7, "Cable",      14.6898, 55.1884, "Cable",
+                                  "unsustainable", "Ronne", "Black", 80]
 
-pp_data_base = pp_data_base.astype({"Name": str,
+pp_data_base = pp_data_base.astype({"PPId": int,
+                                    "Name": str,
                                     "Long": float, 
                                     "Lat": float,
                                     "Type": str,

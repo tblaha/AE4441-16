@@ -8,7 +8,8 @@ Created on Fri Nov 20 12:32:46 2020
 import pandas as pd
 
 from Lib import SimConfig as cfg
-from Lib.grid import pp_data, cons_data
+from Lib.pp_gen import pp_data
+from Lib.cons_gen import cons_data
 from matplotlib import pyplot as plt
 
 plt.close("all")
@@ -18,7 +19,7 @@ fig, axs = plt.subplots(2, 1, constrained_layout=True, figsize=(8, 8))
 #%% verify Power Plant Capacities
 
 
-power_sums = pp_data.groupby(["Type", "time"])["Cap"].sum()
+power_sums = pp_data.groupby(["Type", "Time"])["Cap"].sum()
 
 for key, val in cfg.max_caps.items():
     axs[0].plot(cfg.t, power_sums.loc[key], label=key)
@@ -39,7 +40,7 @@ for gridnode in pd.unique(cons_data["GridConn"]):
                 label=gridnode,
                 )
 
-cons_sums = cons_data.groupby(["time"])["Load"].sum()
+cons_sums = cons_data.groupby(["Time"])["Load"].sum()
 axs[1].plot(cfg.t, cons_sums, label="Consumer Demand")
 
 axs[1].legend(fontsize=12)

@@ -39,9 +39,8 @@ class netgif():
         
     
     
-    def plot_series(self, grid, grid_conn, EVs, pp_data, cons_data, outpath, fnamebase):
+    def plot_series(self, grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase):
         self.grid = grid
-        
         
         # colormapping
         self.cmap = plt.cm.jet
@@ -50,8 +49,12 @@ class netgif():
         # add grid
         self._add_grid()
         
+        # max capacity for each car and powerplant when aggregated over the day
+        car_caps = cars_data.groupby(["CarId"])["Cap"].max()
+        pp_caps  = pp_data.groupby(["Name"])["Cap"].max()
+        
         # iterate over discrete times k
-        # k_array = np.unique(grid_conn["Time"])
+        # k_array = np.unique(grid_links["Time"])
         k_array = np.arange(cfg.K)
         times = np.zeros(cfg.K+1)
         times[1:] = np.cumsum(cfg.dt)
@@ -61,26 +64,28 @@ class netgif():
                            duration=1.5
                            ) as writer:
             
-            for k in k_array:
+            for j in k_array:
                 
                 # add the meat of the plot
-                self._add_links(grid_conn.loc[grid_conn["Time"] == k, :])
-                self._add_cars(EVs.loc[EVs["Time"] == k, :])
-                self._add_pp(pp_data.loc[pp_data["Time"] == k, :])
-                self._add_cons(cons_data.loc[cons_data["Time"] == k, :])
+                self._add_links(grid_links.loc[grid_links["Time"] == j, :])
+                self._add_cars(cars_data.loc[cars_data["Time"] == j, :],
+                               car_caps)
+                self._add_pp(pp_data.loc[pp_data["Time"] == j, :],
+                             pp_caps)
+                self._add_cons(cons_data.loc[cons_data["Time"] == j, :])
                 
                 # make colorbar
                 self.cb = plt.colorbar(self.grid_quivers)
                 self.cb.set_label("% Load", fontsize=16)
                 
                 # make title
-                plt.title("Ronne at " + str(times[k]) 
-                                 + "h to " + str(times2[k]) + "h",
+                plt.title("Network at " + str(times[j]) 
+                                 + "h to " + str(times2[j]) + "h",
                           fontsize=18)
                 
                 
                 # save file as png graphics
-                filename = outpath + "/" + fnamebase + '_' + str(k) + '.png'
+                filename = outpath + "/" + fnamebase + '_' + str(j) + '.png'
                 plt.savefig(filename, 
                             format='png', 
                             )
@@ -108,34 +113,7 @@ class netgif():
                             linewidths=1,
                             edgecolors="black"
                             )
-    
         
-        
-    def _add_links(self, grid_conn):
-        
-        grid = self.grid
-        
-        x1, y1 = grid.loc[grid_conn["conn1"], ["Long", "Lat"]].to_numpy().T
-        x2, y2 = grid.loc[grid_conn["conn2"], ["Long", "Lat"]].to_numpy().T
-        cap = grid_conn["Cap"].to_numpy()
-        load = grid_conn["Load"].to_numpy()
-        
-        x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
-        
-        self.grid_quivers = self.ax.quiver(x,
-                                           y,
-                                           u,
-                                           v,
-                                           pload,
-                                           angles='xy',
-                                           scale_units='xy',
-                                           scale=8.98*1e-6,
-                                           width=0.005,
-                                           linewidth=1,
-                                           transform=ccrs.PlateCarree(), 
-                                           cmap=self.cmap,
-                                           norm=self.norm,
-                                           )
         
         
     def _process_arrows(self, x1, y1, x2, y2, cap, load):
@@ -158,19 +136,51 @@ class netgif():
         (u, v) = (u * sf, v * sf) 
         
         # percentage load of the link for the colormap:
-        pload = 100 * ((load) / cap)
+        assert((np.abs(load) <= cap+1e-2).all())
+        pload = np.zeros(len(load))
+        cap_pos = cap > 0
+        pload[cap_pos] = [100*p/c for (p, c) in zip(load[cap_pos], cap[cap_pos])]
+        
         
         return x1, y1, u, v, pload
     
-    
         
-    def _add_cars(self, EV):
+        
+    def _add_links(self, grid_links):
+        
+        grid = self.grid
+        
+        x1, y1 = grid.loc[grid_links["conn1"], ["Long", "Lat"]].to_numpy().T
+        x2, y2 = grid.loc[grid_links["conn2"], ["Long", "Lat"]].to_numpy().T
+        cap = grid_links["Cap"].to_numpy()
+        load = grid_links["Load"].to_numpy()
+        
+        x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
+        
+        self.grid_quivers = self.ax.quiver(x,
+                                           y,
+                                           u,
+                                           v,
+                                           pload,
+                                           angles='xy',
+                                           scale_units='xy',
+                                           scale=8.98*1e-6,
+                                           width=0.005,
+                                           linewidth=1,
+                                           transform=ccrs.PlateCarree(), 
+                                           cmap=self.cmap,
+                                           norm=self.norm,
+                                           )
+    
+    
+    
+    def _add_cars(self, EV, caps):
         
         grid = self.grid
         
         x1, y1 = grid.loc[EV["GridConn"], ["Long", "Lat"]].to_numpy().T
         x2, y2 = EV[["Long", "Lat"]].to_numpy().T
-        cap = EV["Cap"].to_numpy()
+        cap = caps[EV["CarId"]].to_numpy()
         load = EV["Load"].to_numpy()
         
         x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
@@ -197,14 +207,14 @@ class netgif():
         
         
         
-    def _add_pp(self, pp_data):
+    def _add_pp(self, pp_data, caps):
         
         grid = self.grid
         
-        x1, y1 = grid.loc[pp_data["GridConn"], ["Long", "Lat"]].to_numpy().T
-        x2, y2 = pp_data[["Long", "Lat"]].to_numpy().T
-        
-        cap = pp_data["Cap"].to_numpy()
+        x1, y1 = pp_data[["Long", "Lat"]].to_numpy().T       
+        x2, y2 = grid.loc[pp_data["GridConn"], ["Long", "Lat"]].to_numpy().T
+
+        cap = caps[pp_data["Name"]].to_numpy()
         load = pp_data["Load"].to_numpy()
         
         x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
@@ -215,7 +225,7 @@ class netgif():
                             s=pp_data["Size"].to_numpy(),
                             c=pp_data["Color"],
                             transform=ccrs.PlateCarree(), 
-                            marker="o",
+                            marker="s",
                             linewidths=1,
                             edgecolors="black"
                             )
@@ -253,7 +263,7 @@ class netgif():
                             s=cons_data["Size"].to_numpy(),
                             c=cons_data["Color"],
                             transform=ccrs.PlateCarree(), 
-                            marker="o",
+                            marker="*",
                             linewidths=1,
                             edgecolors="black"
                             )

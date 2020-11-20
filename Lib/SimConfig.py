@@ -15,13 +15,13 @@ import numpy as np
 seed = 1
 
 # car config
-N = 50  # number of cars
+N = 20  # number of cars
 
 # powerplant config
 max_caps = {"Biomass": 15000,
             "Wind": 25000,
             "Solar": 10000,
-            "Cable": 30000,
+            "Cable": 80000,
             }
 
 # power cost
@@ -30,7 +30,7 @@ cu = 2  # relative cost of unsustainable power
 
 # consumer config kW
 cons_mean = 30000
-cons_peak = 40000
+cons_peak = 35000
 
 # day config
 K = 12  # number of timeslots

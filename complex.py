@@ -23,7 +23,7 @@ from gurobipy import GRB
 #%% import libraries with the class definitions and some config
 
 from Lib.cars_gen import car_stat, cars_data_base, cars_data
-from Lib.grid_gen import grid, grid_link_base, grid_link
+from Lib.grid_gen import grid, grid_links_base, grid_links
 from Lib.pp_gen   import pp_data_base, pp_data
 from Lib.cons_gen import cons_data_base, cons_data
 
@@ -62,15 +62,9 @@ for i in range(sum(car_stat['Amount owned'])):
         ))
 
 # deal with car variables and constraints
-X = list()
-Y = list()
-C_cars = list()
 for car in cars:
-    X_i, Y_i = car.create_vars(am)
-    X.append(X_i)
-    Y.append(Y_i)
-    
-    C_cars.append(car.create_constrs(am))
+    car.create_vars(am)
+    car.create_constrs(am)
 
 
 
@@ -83,7 +77,16 @@ cs = 1*np.ones(cfg.K)  # relative cost of sustainable power
 cu = 2*np.ones(cfg.K)  # relative cost of unsustainable power
 
 # create grid object
-AdvancedNet = gd.net(grid, pp_data, cons_data, cs, cu)
+AdvancedNet = gd.net(grid,
+                     grid_links_base,
+                     grid_links,
+                     pp_data_base,
+                     pp_data,
+                     cons_data_base,
+                     cons_data,
+                     cs,
+                     cu,
+                     )
 
 
 
@@ -92,7 +95,7 @@ AdvancedNet = gd.net(grid, pp_data, cons_data, cs, cu)
 AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
 
 # deal with net constraint
-C_node = AdvancedNet.create_constrs(am, cars)
+AdvancedNet.create_nodal_constrs(am, cars, cars_data)
 
 
 
@@ -100,42 +103,10 @@ C_node = AdvancedNet.create_constrs(am, cars)
 
 am.optimize()
 
-# print()
-# for Xi in X:
-#     for Xij in Xi:
-#         print(Xij)
-
-
 
 #######################################
 #%% Post Proc Results
 #######################################
-
-#%% dummy data: grid connection
-
-# grid_conn = pd.DataFrame(columns=["conn1",
-#                                   "conn2", 
-#                                   "Cap",
-#                                   "time",
-#                                   "Load"]
-#                          )
-# grid_conn = grid_conn.astype({"conn1": str, 
-#                               "conn2": str, 
-#                               "Cap": float, 
-#                               "time": int, 
-#                               "Load": float,
-#                               })
-
-# grid_conn.loc[1] = ["Ronne", "Nexo", 100, 0, 70]
-# grid_conn.loc[2] = ["Ronne", "Tejn", 100, 0, 110]
-# grid_conn.loc[3] = ["Nexo", "Tejn", 100, 0, -70]
-# grid_conn.loc[4] = ["Ronne", "Nexo", 100, 1, 0]
-# grid_conn.loc[5] = ["Ronne", "Tejn", 100, 1, 50]
-# grid_conn.loc[6] = ["Nexo", "Tejn", 100, 1, -35]
-# grid_conn.loc[7] = ["Ronne", "Nexo", 100, 2, 105]
-# grid_conn.loc[8] = ["Ronne", "Tejn", 100, 2, 97]
-# grid_conn.loc[9] = ["Nexo", "Tejn", 100, 2, 98]
-
 
 
 #%% post process solution
@@ -150,6 +121,15 @@ for i, car in enumerate(cars):
     cars_data.loc[car_bool, "Load"] = np.array([Xtemp.X for Xtemp in car.Xi])
     cars_data.loc[car_bool, "Cap"]  = 11
 
+for i, pp in enumerate(AdvancedNet.PPs):
+    pp_bool = pp_data["PPId"] == i
+    
+    pp_data.loc[pp_bool, "Load"] = np.array([Xtemp.X for Xtemp in pp.P])
+
+for i, l in enumerate(AdvancedNet.links):
+    l_bool = grid_links["LinkId"] == i
+    
+    grid_links.loc[l_bool, "Load"] = np.array([Xtemp.X for Xtemp in l.L])
 
 
 #%% plotting
@@ -158,10 +138,10 @@ outpath = "./plots/"
 fnamebase = "test"
 
 map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
-# map_extent = [14.66, 14.76, 55.07, 55.125]; zoomlevel = 13; # Ronne
+# map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
 
-c = pt.netgif(map_extent, zoomlevel)  # Ronne
-c.plot_series(grid, grid_link, cars_data, pp_data, cons_data, outpath, fnamebase)
+netplot = pt.netgif(map_extent, zoomlevel)  # Ronne
+netplot.plot_series(grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase)
 
 plt.close("all")
 
@@ -171,9 +151,17 @@ plt.close("all")
 
 # maybe needed, maybe not...
 # gp.disposeDefaultEnv()
+dellist = ["car", "fnamebase", "i", "l", "l_bool", "map_extent", 
+           "outpath", "pp_bool", "zoomlevel"]
 
+for delitem in dellist:
+    try:
+        del globals()[delitem]
+    except:
+        pass
 
-
+del dellist
+del delitem
 
 
 

@@ -29,40 +29,40 @@ grid = grid.astype({"Long": float,
                     "Size": float,
                     })
 
-grid.loc["Ronne"] = [14.7110, 55.0966, 3000, "60kV Station", "Orange", 50]
-grid.loc["Nexo"]  = [15.1291, 55.0585, 3000, "60kV Station", "Orange", 50]
-grid.loc["Tejn"]  = [14.8360, 55.2474, 3000, "60kV Station", "Orange", 50]
+grid.loc["Ronne"] = [14.7110, 55.0966, 1500, "60kV Station", "Orange", 200]
+grid.loc["Nexo"]  = [15.1291, 55.0585, 1500, "60kV Station", "Orange", 200]
+grid.loc["Tejn"]  = [14.8360, 55.2474, 1500, "60kV Station", "Orange", 200]
 
 
 #%% grid links data frame --> time independent base
 
-grid_link_base = pd.DataFrame(columns=["LinkId",
+grid_links_base = pd.DataFrame(columns=["LinkId",
                                        "conn1", # first connection
                                        "conn2", # second connection
                                        "Cap",   # capacity of link
                                        ])
 
-grid_link_base = grid_link_base.astype({"LinkId": int,
+grid_links_base = grid_links_base.astype({"LinkId": int,
                                         "conn1": str, # first connection
                                         "conn2": str, # second connection
                                         "Cap": float,   # capacity of link kW
                                         })
 
-grid_link_base.loc[0, ["conn1", "conn2", "Cap"]] = ["Ronne", "Nexo", 10000]
-grid_link_base.loc[1, ["conn1", "conn2", "Cap"]] = ["Ronne", "Tejn", 10000]
-grid_link_base.loc[2, ["conn1", "conn2", "Cap"]] = ["Nexo",  "Tejn", 10000]
+grid_links_base.loc[0, ["conn1", "conn2", "Cap"]] = ["Ronne", "Nexo", 100000]
+grid_links_base.loc[1, ["conn1", "conn2", "Cap"]] = ["Ronne", "Tejn", 100000]
+grid_links_base.loc[2, ["conn1", "conn2", "Cap"]] = ["Nexo",  "Tejn", 100000]
 
-grid_link_base["LinkId"] = grid_link_base.index
+grid_links_base["LinkId"] = grid_links_base.index
 
 #%% grid links data --> time-dependent
 
 # Repeat entries such that we have one per time slot per powerplant
-grid_link = grid_link_base.loc[
-    grid_link_base.index.repeat(cfg.K)
+grid_links = grid_links_base.loc[
+    grid_links_base.index.repeat(cfg.K)
     ].reset_index(drop=True)
 
-grid_link["Time"] = np.tile(np.arange(cfg.K), len(grid_link_base)).astype(int)
-grid_link["Load"] = 0.
+grid_links["Time"] = np.tile(np.arange(cfg.K), len(grid_links_base)).astype(int)
+grid_links["Load"] = 0.
 
 
 

@@ -33,7 +33,7 @@ for index, row in grid.iterrows():
     
     cons_data_base.loc[index, ["Long", "Lat"]] = dem_loc
     cons_data_base.loc[index, "GridConn"] = index
-    cons_data_base.loc[index, ["Color", "Size"]] = ["Purple", 30]
+    cons_data_base.loc[index, ["Color", "Size"]] = ["Purple", 300]
     cons_data_base.loc[index, "RelCons"] = 1
 
 # normalize Relative Consumption
