@@ -27,7 +27,7 @@ class car:
         name should be a string
         s_day, E_eff, E_bat, P_max should be scalars
         c_conn should be a list: 0 if no charger, 1-C when the connected
-            """
+        """
         
         # saving input in internal memory 
         self.name  = name
@@ -47,7 +47,8 @@ class car:
         self.ch = list()
         for j in range(cfg.K):
             self.ch.append(charger(self.c_conn[j]))
-                        
+     
+        
         
 #%% Variables and Bounds
     def create_vars(self, 
@@ -107,9 +108,9 @@ class car:
             # Select charging power from the M possible modes. 
             # Power = Yij-binarys dotproduct charging power list
             model.addConstr(
-                self.Xi[j] == np.array(self.Yi[j]) @ self.ch[j].P,
+                self.Xi[j] == self.Yi[j] @ self.ch[j].P,
                 name="C_" + self.name + "_" + str(j) + "_Pbat"
-                )
+                        )
         
         
         ## Resulting battery energy constraints 
@@ -127,13 +128,13 @@ class car:
            name="C_" + self.name + "_E_net"
            )
         
-        for j in range(cfg.K):  # for each time slot j
+        for j in range(cfg.K - 1):  # for each time slot j
             # after each time step j, car battery may not go below E_min
             model.addConstr( 
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension of all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
-                    for jj in range(j)
+                    for jj in range(j+1)
                     )
                 >= self.E_min,
                 name="C_" + self.name + "_" + str(j) + "_E_lb"
@@ -144,12 +145,11 @@ class car:
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension of all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Bat energy changed in timeslot jj
-                    for jj in range(j)
+                    for jj in range(j+1)
                     )
                 <= self.E_max,
                 name="C_" + self.name + "_" + str(j) + "_E_ub"
                 )
-
 
 #%% Charger types
 class charger:

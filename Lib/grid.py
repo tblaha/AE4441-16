@@ -73,7 +73,6 @@ class net:
                 name="C_node_" + str(j),
                 )
 
-
 #%% Powerplant class that is mentioned and instantiated above
 
 class powerplant:
