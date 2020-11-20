@@ -8,6 +8,46 @@ from Lib import SimConfig as cfg
 npr.seed(cfg.seed)
 
 
+def rel_assign(w, N):
+    # w: relative weights categories (list or np array)
+    # N: target number of items assigned
+    # a: assignment as integer numpy array
+    rw = w / np.sum(w)
+
+    lamb = 1
+    while True:
+        # basic concept: try scaling the cro by an integer and check resulting 
+        # distribution of cars. Keep raising the integer lamb and once we 
+        # overshoot the cfg.N target --> decrement lamb again and randomly add 
+        # the missing ones from 1 up to len(cro) types
+        # 
+        # I haven't checked the math, but I believe that the amount of cars to be
+        # added is always less or equal len(cro) and thus the code below should 
+        # never fail.
+        
+        Nc = np.sum(np.floor(lamb * rw)).astype(int)
+        if Nc <= N:
+            lamb += 1
+        else:
+            lamb -= 1
+            a = np.floor(lamb * rw).astype(int)
+            pN = np.sum(a)
+            
+            if (N - pN) > len(rw):
+                raise("Amount of items to be randomly added too large")
+                    
+            if pN < N:
+                # scaling cro didn't fully work, we have to randomly add a few cars
+                r = np.arange(len(rw))
+                npr.shuffle(r)
+                
+                a[r[:(N - pN)]] += 1
+            elif pN == N:
+                pass # do nothing
+            else:
+                raise("something went wrong with dynamic assignment wrong")
+            return a
+
 
 #%% car_stat frame
 car_stat = pd.DataFrame(
@@ -19,7 +59,12 @@ car_stat['Battery size'] = [50, 50, 100, 60, 100, 40, 95, 42.2]
 car_stat['Range'] = MTK * np.array([240, 240, 250, 238, 285, 150, 204, 153])
 car_stat['kWh/km'] = car_stat['Battery size']/car_stat['Range']
 
-car_stat['Amount owned'] = [2, 1, 1, 0, 0, 0, 0, 1]
+car_relative_ownership = np.array([4, 2, 2, 1, 1, 8, 4, 4])
+
+            
+car_stat['Amount owned'] = rel_assign(car_relative_ownership, cfg.N)
+
+assert(sum(car_stat['Amount owned']) == cfg.N)
 
 
 
@@ -74,6 +119,9 @@ for i in range(0,sum(car_stat['Amount owned'])):
     # cars_data.at[i, 'kWh/km'] = npr.randint(9,14) # sounds way too high!
     cars_data.at[i, 'kWh/km'] = npr.randint(9,14) * 2/100
 
+cars_data["Color"] = "Blue"
+cars_data["Size"] = 30
+
 
 
 #%% car_data frame --> time dependent attributes
@@ -86,8 +134,17 @@ cars_data = cars_data.loc[
     cars_data.index.repeat(cfg.K)
     ].reset_index(drop=True)
 
-car_dist  = [2, 2, 1]  # make this dynamic
-car_alloc = [k for k in range(G) for l in range(car_dist[k])]
+# assign the cars to the grid nodes
+rel_car_distribution  = [2, 2, 1]  # Ronne, Nexo, Tejn. hard coded for now 
+car_distr = rel_assign(rel_car_distribution, cfg.N)
+assert(sum(car_stat['Amount owned']) == cfg.N)
+
+# stupid hack to get the array describing how many go to which city in another
+# format so that it can be used for indexing. For instance:
+# car_distr == [4 4 3]  --> car_alloc = [0 0 0 0 1 1 1 1 2 2 2]
+car_alloc = [k for k in range(G) for l in range(car_distr[k])]
+
+# randomize which cars will be assigned
 npr.shuffle(car_alloc)
 
 # for each car, do:
@@ -133,7 +190,4 @@ for i, c in enumerate(car_alloc):
     ######## charger connections during the timeslots
     cars_data.loc[car_bool, ["Charger type"]] = 1  # for now
     
-    # temperary data for testing visualization
-    cars_data.loc[car_bool, ["Cap"]] = 11
-    cars_data.loc[car_bool, ["Load"]] = [5, -7, 11]
 

@@ -19,7 +19,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import OSM
+from cartopy.io.img_tiles import GoogleTiles
+
+from Lib import SimConfig as cfg
 
 
 class netgif():
@@ -34,7 +36,7 @@ class netgif():
         self.fig = plt.figure(figsize=self.figsize)
         
         # get and plot the Open Streetmap data
-        request = OSM()
+        request = GoogleTiles()
         self.ax = plt.axes(projection=request.crs)
         self.ax.set_extent(self.extent)
         self.ax.add_image(request, self.zoomlevel)  # zoom level 10
@@ -47,13 +49,17 @@ class netgif():
         
         # colormapping
         self.cmap = plt.cm.jet
-        self.norm = mpl.colors.Normalize(vmin=0, vmax=110)
+        self.norm = mpl.colors.Normalize(vmin=-110, vmax=110)
         
         # add grid
         self._add_grid()
         
         # iterate over discrete times k
-        k_array = np.unique(grid_conn["time"])
+        # k_array = np.unique(grid_conn["time"])
+        k_array = np.arange(cfg.K)
+        times = np.zeros(cfg.K+1)
+        times[1:] = np.cumsum(cfg.dt)
+        times2 = np.roll(times, -1)
         with io.get_writer(outpath+"/"+fnamebase+".gif", # this sets up the gif
                            mode='I', 
                            duration=1.5
@@ -67,7 +73,13 @@ class netgif():
                 
                 # make colorbar
                 self.cb = plt.colorbar(self.grid_quivers)
-                self.cb.set_label("% Load")
+                self.cb.set_label("% Load", fontsize=16)
+                
+                # make title
+                plt.title("Ronne at " + str(times[k]) 
+                                 + "h to " + str(times2[k]) + "h",
+                          fontsize=18)
+                
                 
                 # save file as png graphics
                 filename = outpath + "/" + fnamebase + '_' + str(k) + '.png'
@@ -148,7 +160,7 @@ class netgif():
         (u, v) = (u * sf, v * sf) 
         
         # percentage load of the link for the colormap:
-        pload = 100 * (np.abs(load) / cap)
+        pload = 100 * ((load) / cap)
         
         return x1, y1, u, v, pload
     
@@ -177,7 +189,7 @@ class netgif():
                                            edgecolor="k",
                                            facecolor='none',
                                            linewidth=1,
-                                           width=0.002,
+                                           width=0.0025,
                                            headwidth=10,
                                            headlength=14,
                                            transform=ccrs.PlateCarree(), 
