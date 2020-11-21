@@ -1,3 +1,23 @@
+## Additional python modules
+
+For visualization. What is supposed to work:
+"""
+conda install numpy scipy matplotlib pandas networkx
+conda install -c conda-forge cartopy
+"""
+
+What worked on my Linux distro
+"""
+conda install numpy scipy matplotlib pandas networkx
+conda install geos cython shapely pyshp six
+conda install "proj4<5"
+
+\# then build from source like it's the motherfucking 90s:
+git clone https://github.com/SciTools/cartopy.git
+cd cartopy
+python setup.py install
+"""
+
 ## Install the python module (note: if you're a pip guy, see https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_using_pip_to_install_gr.html):
 1. Get Anaconda (or just conda, as you prefer) for your operating system --> 64bit only!
 2. From the Anaconda windows, open a "CMD.exe Prompt"
