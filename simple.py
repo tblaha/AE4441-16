@@ -35,12 +35,12 @@ sm.ModelSense = 1   # -1 would be maximization
 
 # create list of cfg.N identical car object instances
 cars = list()
-for i in range(sum(crs.car_stat['Amount owned'])):
+for i in range(0,crs.cars_data['Car Type'].size):
     cars.append(  ev_sys.car(  str(i),  # car name
                                crs.cars_data['Distance Driven'][i],  # km driven per day
-                               crs.cars_data['kWh/km'][i]/10, # kWh/km during driving
+                               crs.cars_data['kWh/km'][i], # kWh/km during driving
                                crs.cars_data['Battery size'][i],  # kWh battery size
-                               [crs.cars_data['Grid connection 1'][i],crs.cars_data['Grid connection 2'][i],crs.cars_data['Grid connection 3'][i], crs.cars_data['Grid connection 4'][i],crs.cars_data['Grid connection 5'][i],crs.cars_data['Grid connection 6'][i],crs.cars_data['Grid connection 7'][i], crs.cars_data['Grid connection 8'][i]],  # charger type connection to grid per timeslot                
+                               list(crs.cars_t_data['Grid availability'][i*cfg.K:(i+1)*cfg.K]),  # charger type connection to grid per timeslot                
                                )
                 )
 #%% create grid object
