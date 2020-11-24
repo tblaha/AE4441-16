@@ -37,7 +37,7 @@ K = 12  # number of timeslots
 dtday = 10  # daylight hours
 
 # charger config
-num_work_charger = np.ceil(0.1*N)
+num_work_charger = np.ceil(0.5*N)
 p_work_charger_type = np.array([0.05, 0.25, 0.25, 0.45])
 p_home_charger_type = np.array([0, 0, 0.3, 0.7])
 

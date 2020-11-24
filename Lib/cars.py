@@ -118,7 +118,7 @@ class car:
                 # we can freely select one charger that the car will use that
                 # day for all time slots with "-1" as charger type
                 model.addConstr(
-                    sum(self.Yi[j]) == 1,
+                    sum(self.Yi[j]) <= 1,
                     name="C_OOOM_" + self.name + "_" + str(j),
                     )
             elif ch == 0:

@@ -55,6 +55,7 @@ print("OK!")
 
 print("complex.py: Initialize Gurobi Model", end='... ')
 
+
 # create new model ("advanced model") am:
 am = gp.Model("Advanced Model")
 
@@ -84,9 +85,23 @@ for i in range(sum(car_stat['Amount owned'])):
 for car in cars:
     car.create_vars(am)
     car.create_constrs(am)
+    
+
+# a little bit beun to put it here, but oh well... 
+# --> amount of away-from-home charger constraints
+for k, p in enumerate(cfg.p_work_charger_type):
+    for j in range(cfg.K):
+        am.addConstr( # the product makes sure we only count work chargers
+            sum([car.Yi[j][k] * (car.Ch_constr[j] == -1).astype(float)
+                  for car in cars
+                  ]) <= np.ceil(p*cfg.num_work_charger),
+            name="C_numCh_" + str(j) + "_" + str(k),
+            )
+
 
 
 print("OK!")
+
 
 
 #%% grid config
@@ -124,6 +139,14 @@ print("OK!")
 
 
 
+
+
+
+
+
+
+
+
 #%% solve
 
 print("complex.py: Solve the model...")
@@ -133,6 +156,21 @@ am.optimize()
 
 
 print("\n\ncomplex.py: ----------------\n\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #######################################
 #%% Post Proc Results

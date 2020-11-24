@@ -263,7 +263,7 @@ cars_data["Charger Power"] = 0
 morn_even_idx = np.searchsorted(cfg.t, [6, 18]) - 1
 
 midday_bool = ((cars_data["Time"] > morn_even_idx[0])
-                    | (cars_data["Time"] <= morn_even_idx[1]))
+                    & (cars_data["Time"] <= morn_even_idx[1]))
 
 # assign wildcard charger for midday
 cars_data.loc[midday_bool, "Charger type"] = -1
