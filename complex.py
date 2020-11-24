@@ -7,41 +7,53 @@ Created on Fri Nov 13 11:34:21 2020
 """
 
 #%% reset python workspace
+
+print("complex.py: Clearing workspace", end='... ')
+
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
 
+print("OK!")
+
+
 
 #%% import modules
+
+print("complex.py: Importing Modules", end='... ')
+
+#general modules
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-
 import gurobipy as gp
-from gurobipy import GRB
 
-
-#%% import libraries with the class definitions and some config
-
-from Lib.cars_gen import car_stat, cars_data_base, cars_data
-from Lib.grid_gen import grid, grid_links_base, grid_links
-from Lib.pp_gen   import pp_data_base, pp_data
-from Lib.cons_gen import cons_data_base, cons_data
-
-from Lib import cars as cs
-from Lib import grid as gd
-from Lib import SimConfig as cfg
-
+# try importing cartopy for creating of beatuiful and awesome maps
 try:
     import cartopy
     cartopy_exists = True
     from Lib import plotting as pt
 except ImportError:
     cartopy_exists = False
+    
+    
 
+# generate and organize the problem data --> actual magic is hidden here
+from Lib.cars_gen import car_stat, cars_data_base, cars_data, charger_stat
+from Lib.grid_gen import grid, grid_links_base, grid_links
+from Lib.pp_gen   import pp_data_base, pp_data
+from Lib.cons_gen import cons_data_base, cons_data
+
+# import classes to be used to generate the Gurobi variables/constraints
+from Lib import cars as cs
+from Lib import grid as gd
+from Lib import SimConfig as cfg
+
+print("OK!")
 
 
 
 #%% empty gurobi model
+
+print("complex.py: Initialize Gurobi Model", end='... ')
 
 # create new model ("advanced model") am:
 am = gp.Model("Advanced Model")
@@ -50,9 +62,15 @@ am = gp.Model("Advanced Model")
 # so, only set sense:
 am.ModelSense = 1   # -1 would be maximization
 
+print("OK!")
+
 
 
 #%% deal with car variables and constraints
+
+print("complex.py: Create cars/charger objects, variables and constraints",
+      end='... ')
+
 
 # create list of car objects
 cars = list()
@@ -60,14 +78,7 @@ for i in range(sum(car_stat['Amount owned'])):
     # figure out which lines in the cars_data frame belong to car i
     car_bool = cars_data["CarId"] == i
     
-    cars.append(cs.car(
-        str(i),  # car name
-        cars_data.loc[car_bool, 'Distance Driven'].iat[0],  # km driven per day
-        cars_data.loc[car_bool, 'kWh/km'].iat[0], # kWh/km during driving
-        cars_data.loc[car_bool, 'Battery size'].iat[0],  # kWh battery size
-        #cars_data.loc[car_bool, 'GridNode'],  # connection to grid per timeslot
-        cars_data.loc[car_bool, 'Charger type'].to_numpy(),   # charger type
-        ))
+    cars.append(cs.car(cars_data.loc[car_bool], charger_stat))
 
 # deal with car variables and constraints
 for car in cars:
@@ -75,12 +86,17 @@ for car in cars:
     car.create_constrs(am)
 
 
+print("OK!")
+
 
 #%% grid config
-# ps_s = 100*np.ones(cfg.K)  # kWh sustainable power
-# pu_s = 500*np.ones(cfg.K)  # kWh unsustainable power
-# p_d = 0*np.ones(cfg.K)  # kWh custumer demand
 
+print("complex.py: ---------------------")
+print("complex.py: Create grid object, variables and constraints",
+      end='... ')
+
+
+# costs for objective functions
 cs = 1*np.ones(cfg.K)  # relative cost of sustainable power
 cu = 2*np.ones(cfg.K)  # relative cost of unsustainable power
 
@@ -97,8 +113,6 @@ AdvancedNet = gd.net(grid,
                      )
 
 
-
-#%%
 # deal with net variables and bounds and objective coefficients
 AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
 
@@ -106,11 +120,19 @@ AdvancedNet.create_vars_obj(am)  # also generates objective coefficients
 AdvancedNet.create_nodal_constrs(am, cars, cars_data)
 
 
+print("OK!")
+
+
 
 #%% solve
 
+print("complex.py: Solve the model...")
+print("\n\ncomplex.py: ------------------\n\n")
+
 am.optimize()
 
+
+print("\n\ncomplex.py: ----------------\n\n")
 
 #######################################
 #%% Post Proc Results
@@ -119,6 +141,8 @@ am.optimize()
 
 #%% post process solution
 
+print("complex.py: Post process Gurobi results back into Pandas frames",
+      end='... ')
 
 # temporary data for testing visualization
 for i, car in enumerate(cars):
@@ -127,7 +151,15 @@ for i, car in enumerate(cars):
     
     # add the charging load
     cars_data.loc[car_bool, "Load"] = np.array([Xtemp.X for Xtemp in car.Xi])
-    cars_data.loc[car_bool, "Cap"]  = 11
+    cars_data.loc[car_bool, "Cap"] \
+        = (car.P_chargers
+                @ np.array(
+                    [Ytemp.X for Yij in car.Yi for Ytemp in Yij])\
+                        .reshape(cfg.K,
+                                 len(car.P_chargers)
+                                 ).T)
+                        
+    # cars_data.loc[car_bool, "Cap"]  = 11
 
 for i, pp in enumerate(AdvancedNet.PPs):
     pp_bool = pp_data["PPId"] == i
@@ -137,12 +169,20 @@ for i, pp in enumerate(AdvancedNet.PPs):
 for i, l in enumerate(AdvancedNet.links):
     l_bool = grid_links["LinkId"] == i
     
-    grid_links.loc[l_bool, "Load"] = np.array([Xtemp.X for Xtemp in l.L])
+    grid_links.loc[l_bool, "Load"] = np.array([Xtemp.X for Xtemp in l.Lp]) \
+                                      - np.array([Xtemp.X for Xtemp in l.Lm])
+
+
+print("OK!")
+
 
 
 #%% plotting
 
 if cartopy_exists:
+    print("complex.py: Silently plot Cartopy maps",
+      end='... ')
+    
     outpath = "./plots/"
     fnamebase = "test"
     
@@ -153,10 +193,19 @@ if cartopy_exists:
     netplot.plot_series(grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase)
     
     plt.close("all")
+    
+    print("OK!")
+
+print("complex.py: ------------------")
+print("complex.py: MAIN PROGRAM DONE!")
 
 
 
 #%% clean up
+
+print("complex.py: Cleaning up workspace",
+  end='... ')
+
 
 # maybe needed, maybe not...
 # gp.disposeDefaultEnv()
@@ -172,10 +221,11 @@ for delitem in dellist:
 del dellist
 del delitem
 
+print("OK!")
 
-
-
-
+print("complex.py: FULLY DONE")
+print("complex.py: ---------------")
+print("complex.py: ---------------")
 
 
 

@@ -181,7 +181,8 @@ class powerplant:
             p = model.addVar( 
                     lb = lb,
                     ub = self.p_s[j],  # upper bound: 
-                    obj = self.c[j] * cfg.dt[j], # coefficient in objective function
+                    obj = self.c[j] * cfg.dt[j], # coefficient in objective 
+                                                 # function
                     vtype=GRB.CONTINUOUS,
                     name="P_" + self.name + "_" + str(j)
                     )
@@ -209,23 +210,45 @@ class link():
         self.cap = cap
         
     def create_vars_obj(self, model):
-        self.L = list()
+        self.L  = list()
+        self.Lp = list()
+        self.Lm = list()
+        
         for j in range(cfg.K):
             
             # this does the heavy lifting of adding the vars to model
-            l = model.addVar(
-                    lb = -self.cap,
-                    ub = +self.cap,
-                    obj = 0,   # TODO: fix this with some sort of 
-                               # regularization so we don't get speedy 
-                               # currents running round in circles...
+            lp = model.addVar(
+                    lb = 0,
+                    ub = self.cap,
+                    obj = 1e-6,   # TODO: fix this with some sort of 
+                                  # regularization so we don't get speedy 
+                                  # currents running round in circles...
                     vtype = GRB.CONTINUOUS,
-                    name = "L_" + str(self.name) + "-" + self.conn1 + "-" + self.conn2 + "_" + str(j),
+                    name = "L+_" + str(self.name) + "-" + self.conn1 + "-"
+                            + self.conn2 + "_" + str(j),
                     )
-                
+            
+            lm = model.addVar(
+                    lb = 0,
+                    ub = self.cap,
+                    obj = 1e-6,   # TODO: fix this with some sort of 
+                                   # regularization so we don't get speedy 
+                                   # currents running round in circles...
+                    vtype = GRB.CONTINUOUS,
+                    name = "L-_" + str(self.name) + "-" + self.conn1 + "-"
+                            + self.conn2 + "_" + str(j),
+                    )
+            
             # this only saves the gurobi variable objects to a list for future 
             # reference in the node constraints
-            self.L.append(l)
+            self.L.append(lp-lm) # praise the Gurobipy-Jesus, this is awesome!
+                                 # I can literally just subtract the variables
+                                 # toimplement an unrestricted-in-sign case
+                                 # and they are being treated as one object in 
+                                 # the reset of the code!
+                                 
+            self.Lp.append(lp)
+            self.Lm.append(lm)
         
         return self.L
     
