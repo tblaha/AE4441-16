@@ -89,14 +89,18 @@ for car in cars:
 
 # a little bit beun to put it here, but oh well... 
 # --> amount of away-from-home charger constraints
-for k, p in enumerate(cfg.p_work_charger_type):
-    for j in range(cfg.K):
-        am.addConstr( # the product makes sure we only count work chargers
-            sum([car.Yi[j][k] * (car.Ch_constr[j] == -1).astype(float)
-                  for car in cars
-                  ]) <= np.ceil(p*cfg.num_work_charger),
-            name="C_numCh_" + str(j) + "_" + str(k),
-            )
+for j in range(cfg.K):
+    # if no cars have work chargers at this time --> no constraint
+    if np.array([car.Ch_constr[j] == -1 for car in cars]).astype(bool).any():
+        for k, p in enumerate(cfg.p_work_charger_type):
+            am.addConstr( # the product makes sure we only count work chargers
+                sum([car.Yi[j][k] * (car.Ch_constr[j] == -1).astype(float)
+                      for car in cars
+                      ]) <= np.ceil(p*cfg.num_work_charger),
+                name="C_numCh_" + str(j) + "_" + str(k),
+                )
+    else:
+        continue
 
 
 

@@ -159,7 +159,7 @@ for cat in repeat_cats:
 
 # for plotting
 cars_data_base["Color"] = "Blue"
-cars_data_base["Size"]  = 30
+cars_data_base["Size"]  = 7.5
 
 
 #### assign driven distance

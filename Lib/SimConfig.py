@@ -14,10 +14,10 @@ import numpy as np
 seed = 2
 
 # car config
-N = 3  # number of cars
+N = 50  # number of cars
 
 # grid config
-grid_setting = 1
+grid_setting = 3
 
 # consumer config kW
 cons_mean = 30000
@@ -37,7 +37,7 @@ elif grid_setting == -1:
 max_caps = {"Biomass": 15000,
             "Wind": 20000,
             "Solar": 5000,
-            "Cable": 30000,
+            "Cable": 50000,
             }
 
 # power cost
@@ -45,7 +45,7 @@ cs = 1  # relative cost of sustainable power
 cu = 2  # relative cost of unsustainable power
 
 # day config
-K = 3  # number of timeslots
+K = 12  # number of timeslots
 dtday = 10  # daylight hours
 
 # charger config

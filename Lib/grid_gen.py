@@ -44,13 +44,13 @@ grid_links_base = grid_links_base.astype({"LinkId": int,
 
 
 if cfg.grid_setting == 1:
-    grid.loc["Ronne"] = [14.7110, 55.0966, 1500, "60kV Station", "Orange", 200]
+    grid.loc["Ronne"] = [14.7110, 55.0966, 1500, "60kV Station", "Pink", 200]
     grid_links_base["LinkId"] = grid_links_base.index
 
 elif cfg.grid_setting == 3:
-    grid.loc["Ronne"] = [14.7110, 55.0966, 1500, "60kV Station", "Orange", 200]
-    grid.loc["Nexo"]  = [15.1291, 55.0585, 1500, "60kV Station", "Orange", 200]
-    grid.loc["Tejn"]  = [14.8360, 55.2474, 1500, "60kV Station", "Orange", 200]
+    grid.loc["Ronne"] = [14.7110, 55.0966, 1500, "60kV Station", "Pink", 200]
+    grid.loc["Nexo"]  = [15.1291, 55.0585, 1500, "60kV Station", "Pink", 200]
+    grid.loc["Tejn"]  = [14.8360, 55.2474, 1500, "60kV Station", "Pink", 200]
     
     grid_links_base.loc[0, ["conn1", "conn2", "Cap"]] = ["Ronne", "Nexo", 100000]
     grid_links_base.loc[1, ["conn1", "conn2", "Cap"]] = ["Ronne", "Tejn", 100000]

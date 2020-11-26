@@ -13,12 +13,14 @@ import imageio as io
 import matplotlib as mpl
 import matplotlib.pyplot as plt 
 import matplotlib.animation as ani
+from matplotlib.lines import Line2D
 
 import cartopy.crs as ccrs
 from cartopy.io.img_tiles import GoogleTiles
 
 from Lib import SimConfig as cfg
 
+#%%
 
 class netgif():
     def __init__(self, extend, zoom):
@@ -103,19 +105,85 @@ class netgif():
     def _make_legend(self, grid, grid_links, cars_data, pp_data, cons_data):
         # official matplotlib beun to get custom legends...
         # https://matplotlib.org/3.1.1/gallery/text_labels_and_annotations/custom_legends.html
-        custom_lines = [
-            mpl.lines.Line2D([0], [0],
-                             marker="*",
-                             markersize=15,
-                             linestyle="",
-                             linewidth=1,
-                             color="Purple",
-                             # edgecolor="black",
-                             label="Consumers"
-                             )
-            ]
+        custom_lines = []
         
-        # add cars as tiny dots!
+            # mpl.lines.Line2D([0], [0],
+            #                  marker="*",
+            #                  markersize=15,
+            #                  linestyle="",
+            #                  linewidth=1,
+            #                  color="Purple",
+            #                  # edgecolor="black",
+            #                  label="Consumers"
+            #                  )
+            # ]
+        
+        # cars dots
+        custom_lines.append(Line2D(
+            [0], [0],
+            marker=".",
+            linestyle="",
+            color=cars_data["Color"].iat[0],
+            label="EV Cars",
+            ))
+        
+        # cars dashed arrows
+        custom_lines.append(Line2D(
+            [0], [0],
+            marker="",
+            linestyle="--",
+            color=self.cmap(0.5),
+            label="V2G links",
+            ))
+        
+        # solid arrows for other grid participants
+        custom_lines.append(Line2D(
+            [0], [0],
+            marker="",
+            linestyle="-",
+            color=self.cmap(0.5),
+            label="Other grid links",
+            ))
+        
+        # grid nodes circles
+        custom_lines.append(Line2D(
+            [0], [0],
+            marker="o",
+            markersize=9,
+            markeredgewidth=1,
+            markeredgecolor='k',
+            linestyle="",
+            color=grid["Color"].iat[0],
+            label="Grid Nodes",
+            ))
+        
+        
+        # power plants including color coding
+        for key in cfg.max_caps.keys():
+            custom_lines.append(Line2D(
+                [0], [0],
+                marker="s",
+                markersize=9,
+                markeredgewidth=1,
+                markeredgecolor='k',
+                linestyle="",
+                color=pp_data.loc[pp_data["Type"] == key,
+                                  "Color"].iat[0],
+                label=key+" Power",
+                ))
+        
+        # consumers
+        custom_lines.append(Line2D(
+            [0], [0],
+            marker="*",
+            markersize=10,
+            markeredgewidth=1,
+            markeredgecolor='k',
+            linestyle="",
+            color=cons_data["Color"].iat[0],
+            label="Consumers",
+            ))
+        
         self.legend = self.fig.legend(handles=custom_lines)
         
             
@@ -176,7 +244,7 @@ class netgif():
         load = grid_links["Load"].to_numpy()
         
         x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
-        
+                
         self.grid_quivers = self.ax.quiver(x,
                                            y,
                                            u,
@@ -204,6 +272,16 @@ class netgif():
         load = EV["Load"].to_numpy()
         
         x, y, u, v, pload = self._process_arrows(x1, y1, x2, y2, cap, load)
+        
+        
+        self.car_scatter = \
+            self.ax.scatter(EV["Long"],
+                            EV["Lat"],
+                            s=EV["Size"].to_numpy(),
+                            c=EV["Color"],
+                            transform=ccrs.PlateCarree(), 
+                            marker=".",
+                            )
         
         self.car_quivers  = self.ax.quiver(x,
                                            y,
@@ -307,6 +385,7 @@ class netgif():
         self.cb.remove()
         self.grid_quivers.remove()
         self.car_quivers.remove()
+        self.car_scatter.remove()
         self.pp_scatter.remove()
         self.pp_quivers.remove()
         self.cons_scatter.remove()

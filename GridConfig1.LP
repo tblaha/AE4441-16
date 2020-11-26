@@ -69,18 +69,10 @@ Subject To
  C_Eub_2_0: 8 X_2_0 <= 19
  C_Elb_2_1: 8 X_2_0 + 8 X_2_1 >= -19
  C_Eub_2_1: 8 X_2_0 + 8 X_2_1 <= 19
- C_numCh_0_0: <= 1
  C_numCh_1_0: Y_1_1_0 + Y_2_1_0 <= 1
- C_numCh_2_0: <= 1
- C_numCh_0_1: <= 1
  C_numCh_1_1: Y_1_1_1 + Y_2_1_1 <= 1
- C_numCh_2_1: <= 1
- C_numCh_0_2: <= 1
  C_numCh_1_2: Y_1_1_2 + Y_2_1_2 <= 1
- C_numCh_2_2: <= 1
- C_numCh_0_3: <= 1
  C_numCh_1_3: Y_1_1_3 + Y_2_1_3 <= 1
- C_numCh_2_3: <= 1
  C_nodal_Ronne_0: - X_0_0 - X_1_0 - X_2_0 + P_Biomass_0 + P_WindWest_0
    + P_Cable_0 + P_SolarWest_0 = 21440.6779661017
  C_nodal_Ronne_1: - X_0_1 - X_1_1 - X_2_1 + P_Biomass_1 + P_WindWest_1
