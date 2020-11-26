@@ -34,7 +34,7 @@ pp_data_base = pd.DataFrame(columns=["PPId",
 
 
 if cfg.grid_setting == 1:
-    pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
+    pp_data_base.loc["Kraftvaerk"] = [0, "Kraftvaerk",    14.6963, 55.0938, "Biomass", 
                                       "sustainable", "Ronne", "Brown", 80]
     pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
                                       "sustainable", "Ronne", "White", 80]
@@ -43,8 +43,8 @@ if cfg.grid_setting == 1:
     pp_data_base.loc["SolarWest"]  = [3, "SolarWest",  14.7241, 55.1312, "Solar",
                                       "sustainable", "Ronne", "Orange", 80]
 elif cfg.grid_setting == 3:
-    pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
-                                      "sustainable", "Ronne", "Brown", 80]
+    pp_data_base.loc["Kraftvaerk"] = \
+      [0, "Kraftvaerk", 14.6963, 55.0938, "Biomass", "sustainable", "Ronne", "Brown", 80]
     pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
                                       "sustainable", "Ronne", "White", 80]
     pp_data_base.loc["WindNorth"]  = [2, "WindNorth",  14.7564, 55.2552, "Wind",
@@ -64,10 +64,31 @@ elif cfg.grid_setting == 3:
     pp_data_base.loc["Cable"]      = [7, "Cable",      14.6898, 55.1884, "Cable",
                                       "unsustainable", "Ronne", "Black", 80]
 elif cfg.grid_setting == -1:
-    pass
+    pp_data_base.loc["Kraftvaerk", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.6963, 55.0938, "Biomass", "sustainable", "Ronne", "Brown", 80]
+    
+    pp_data_base.loc["WindNorth", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.740725, 55.237306, "Wind",    "sustainable", "Olsker", "White", 80]
+    pp_data_base.loc["WindWest", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.74993, 55.18200, "Wind",    "sustainable", "Hasle", "White", 80]
+    pp_data_base.loc["WindSouth", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.84812, 55.05616, "Wind",    "sustainable", "Akirkeby", "White", 80]
+    pp_data_base.loc["WindEast", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [15.02331, 55.05478, "Wind",    "sustainable", "Bodilsker", "White", 80]
 
-
-
+    pp_data_base.loc["SolarNorth", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.84209, 55.24465, "Solar",    "sustainable", "Olsker", "Orange", 80]
+    pp_data_base.loc["SolarWest", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.73486, 55.11800, "Solar",    "sustainable", "Ronne Nord", "Orange", 80]
+    pp_data_base.loc["SolarEast", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [15.09376, 55.01898, "Solar",    "sustainable", "Poulsker", "Orange", 80]
+      
+    pp_data_base.loc["SeaCable", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
+      [14.68108, 55.18534, "Cable",    "unsustainable", "Hasle", "Black", 80]
+    
+    pp_data_base["PPId"] = range(9)
+    pp_data_base["Name"] = pp_data_base.index
+    
 pp_data_base = pp_data_base.astype({"PPId": int,
                                     "Name": str,
                                     "Long": float, 

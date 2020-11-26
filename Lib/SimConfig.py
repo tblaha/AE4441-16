@@ -14,10 +14,10 @@ import numpy as np
 seed = 2
 
 # car config
-N = 50  # number of cars
+N = 100  # number of cars
 
 # grid config
-grid_setting = 3
+grid_setting = -1
 
 # consumer config kW
 cons_mean = 30000
@@ -30,14 +30,17 @@ elif grid_setting == 3:
     rel_car_distribution = [2, 2, 1]
     rel_cons_distribution = [3, 1, 1]
 elif grid_setting == -1:
-    raise NotImplementedError("Only grid settings are 1 and 3")
+    rel_car_distribution = [2, 1.5, 0.2, 0, 0.7, 1.6, 3.6, 0.2,
+                             0.25, 0.7, 6, 3, 3, 0, 1, 1]
+    rel_cons_distribution = [2, 1.5, 0.2, 0, 0.7, 1.6, 3.6, 0.2,
+                             0.25, 0.7, 6, 3, 3, 0, 1, 1]
     
 
 # powerplant config
 max_caps = {"Biomass": 15000,
             "Wind": 20000,
             "Solar": 5000,
-            "Cable": 50000,
+            "Cable": 25000,
             }
 
 # power cost

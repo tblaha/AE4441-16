@@ -111,11 +111,12 @@ class net:
             p_p_idx = pp_data_base.loc[pp_data_base["GridConn"] == index, 
                                        "PPId"]
             
-            
+            print(index)
             for j in range(cfg.K):
                 # sum of customer demands at this location
                 d_sum = -n_d.iat[j]
-                
+                print(p_l_idx)
+                __ = [ self.links[i].L for i in p_l_idx ]
                 # sum of links
                 l_sum = ( sum([ self.links[i].L[j] for i in p_l_idx ])
                              - sum([ self.links[i].L[j] for i in n_l_idx ])

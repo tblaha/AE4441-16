@@ -31,7 +31,7 @@ axs[0].plot(cfg.t, sus_sum["sustainable"],
 
 # plot total power available
 axs[0].plot(cfg.t, sus_sum.groupby("Time").sum(),
-            label="Total Capacity", linestyle="--")
+            label="Total Capacity", linestyle="--", color="k")
 
     
 axs[0].legend(fontsize=9, loc="upper right")
@@ -69,6 +69,6 @@ axs[1].legend(fontsize=9)
 axs[1].grid()
 axs[1].set_xlim(left=0, right=24)
 axs[1].set_ylim(bottom=0)
-axs[1].set_title("Consumer Demand", fontsize=18)
+axs[1].set_title("Consumer Demand vs Supply", fontsize=18)
 axs[1].set_xlabel("Time of Day [h]", fontsize=16)
-axs[1].set_ylabel("Consumer Demand [kW]", fontsize=16)
+axs[1].set_ylabel("Consumer Demand / Supply [kW]", fontsize=16)
