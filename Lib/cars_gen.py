@@ -194,8 +194,7 @@ cars_data_base["Distance Driven"] = draw_from_hist(
 # how many grid nodes?
 G = len(grid)
 
-rel_car_distribution  = [2, 2, 1]  # Ronne, Nexo, Tejn. hard coded for now 
-car_distr = relative_assign(rel_car_distribution, cfg.N)
+car_distr = relative_assign(cfg.rel_car_distribution, cfg.N)
 assert(sum(car_stat['Amount owned']) == cfg.N)
 
 # get the array describing how many go to which city in another

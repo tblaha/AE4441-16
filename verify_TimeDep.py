@@ -24,28 +24,51 @@ power_sums = pp_data.groupby(["Type", "Time"])["Cap"].sum()
 for key, val in cfg.max_caps.items():
     axs[0].plot(cfg.t, power_sums.loc[key], label=key)
     
-axs[0].legend(fontsize=12, loc="upper right")
+# plot sustainable sum
+sus_sum = pp_data.groupby(["Sustainability", "Time"])["Cap"].sum()
+axs[0].plot(cfg.t, sus_sum["sustainable"],
+            label="Sustainable Capacity", linestyle="--")
+
+# plot total power available
+axs[0].plot(cfg.t, sus_sum.groupby("Time").sum(),
+            label="Total Capacity", linestyle="--")
+
+    
+axs[0].legend(fontsize=9, loc="upper right")
 
 axs[0].grid()
+axs[0].set_xlim(left=0, right=24)
+axs[0].set_ylim(bottom=0)
 axs[0].set_title("Aggregated Powerplant capacities by type", fontsize=18)
-axs[0].set_ylabel("Powerplant capacity [kW]", fontsize=16)
+axs[0].set_ylabel("Powerplant Capacity [kW]", fontsize=16)
 
 
 #%% verify Consumer Demands
 
 
-for gridnode in pd.unique(cons_data["GridConn"]):
-    axs[1].plot(cfg.t, 
-                cons_data.loc[cons_data["GridConn"] == gridnode, "Load"],
-                label=gridnode,
-                )
-
+# plot consumer sum
 cons_sums = cons_data.groupby(["Time"])["Load"].sum()
-axs[1].plot(cfg.t, cons_sums, label="Consumer Demand")
+axs[1].plot(cfg.t, cons_sums, label="Total Consumer Demand", linestyle="-")
 
-axs[1].legend(fontsize=12)
+# per consumer
+# for gridnode in pd.unique(cons_data["GridConn"]):
+#     axs[1].plot(cfg.t, 
+#                 cons_data.loc[cons_data["GridConn"] == gridnode, "Load"],
+#                 label=gridnode,
+#                 )
+
+# overlay available power:
+axs[1].plot(cfg.t, sus_sum["sustainable"],
+            label="Sustainable Capacity", linestyle="-.")
+axs[1].plot(cfg.t, sus_sum.groupby("Time").sum(),
+            label="Total Capacity", linestyle="-.")
+
+
+axs[1].legend(fontsize=9)
 
 axs[1].grid()
-axs[1].set_title("Aggregated Consumer Demand", fontsize=18)
+axs[1].set_xlim(left=0, right=24)
+axs[1].set_ylim(bottom=0)
+axs[1].set_title("Consumer Demand", fontsize=18)
 axs[1].set_xlabel("Time of Day [h]", fontsize=16)
 axs[1].set_ylabel("Consumer Demand [kW]", fontsize=16)

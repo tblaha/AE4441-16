@@ -224,8 +224,10 @@ if cartopy_exists:
     outpath = "./plots/"
     fnamebase = "test"
     
-    map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm
-    # map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
+    if cfg.grid_setting == 1:
+        map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
+    else:
+        map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm 
     
     netplot = pt.netgif(map_extent, zoomlevel)  # Ronne
     netplot.plot_series(grid, grid_links, cars_data, pp_data, cons_data, outpath, fnamebase)

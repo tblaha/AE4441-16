@@ -26,6 +26,7 @@ cons_data_base = pd.DataFrame(columns=["ConsId",
                                        "Peak",
                                        ])
 
+i = 0
 for index, row in grid.iterrows():
     gc_loc = row[["Long", "Lat"]].to_numpy()
     centre_vector = (np.array([14.9291, 55.1146]) - gc_loc)
@@ -34,7 +35,10 @@ for index, row in grid.iterrows():
     cons_data_base.loc[index, ["Long", "Lat"]] = dem_loc
     cons_data_base.loc[index, "GridConn"] = index
     cons_data_base.loc[index, ["Color", "Size"]] = ["Purple", 300]
-    cons_data_base.loc[index, "RelCons"] = 1
+    cons_data_base.loc[index, "RelCons"] = cfg.rel_cons_distribution[i]
+    
+    # beeeeeeuuuun
+    i += 1
 
 # normalize Relative Consumption
 

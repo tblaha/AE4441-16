@@ -12,8 +12,10 @@ import pandas as pd
 import copy
 import os
 
+
 # import the global config
 from Lib import SimConfig as cfg
+npr.seed(cfg.seed)
 
 
 #%% powerplant data frame --> timeslot-independent attributes
@@ -29,29 +31,42 @@ pp_data_base = pd.DataFrame(columns=["PPId",
                                      "Size",
                                      ])
 
-pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
-                                  "sustainable", "Ronne", "Brown", 80]
 
-pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
-                                  "sustainable", "Ronne", "White", 80]
 
-pp_data_base.loc["WindNorth"]  = [2, "WindNorth",  14.7564, 55.2552, "Wind",
-                                  "sustainable", "Tejn",  "White", 80]
+if cfg.grid_setting == 1:
+    pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
+                                      "sustainable", "Ronne", "Brown", 80]
+    pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
+                                      "sustainable", "Ronne", "White", 80]
+    pp_data_base.loc["Cable"]      = [2, "Cable",      14.6898, 55.1884, "Cable",
+                                      "unsustainable", "Ronne", "Black", 80]
+    pp_data_base.loc["SolarWest"]  = [3, "SolarWest",  14.7241, 55.1312, "Solar",
+                                      "sustainable", "Ronne", "Orange", 80]
+elif cfg.grid_setting == 3:
+    pp_data_base.loc["Biomass"]    = [0, "Biomass",    14.6963, 55.0938, "Biomass", 
+                                      "sustainable", "Ronne", "Brown", 80]
+    pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
+                                      "sustainable", "Ronne", "White", 80]
+    pp_data_base.loc["WindNorth"]  = [2, "WindNorth",  14.7564, 55.2552, "Wind",
+                                      "sustainable", "Tejn",  "White", 80]
+    
+    pp_data_base.loc["WindEast"]   = [3, "WindEast",   15.0928, 55.0815, "Wind",
+                                      "sustainable", "Nexo",  "White", 80]
+    pp_data_base.loc["SolarWest"]  = [4, "SolarWest",  14.7241, 55.1312, "Solar",
+                                      "sustainable", "Ronne", "Orange", 80]
+    
+    
+    pp_data_base.loc["SolarNorth"] = [5, "SolarNorth", 14.8539, 55.2314, "Solar",
+                                      "sustainable", "Tejn",  "Orange", 80]
+    
+    pp_data_base.loc["SolarEast"]  = [6, "SolarEast",  15.0877, 55.0408, "Solar",
+                                      "sustainable", "Nexo",  "Orange", 80]
+    pp_data_base.loc["Cable"]      = [7, "Cable",      14.6898, 55.1884, "Cable",
+                                      "unsustainable", "Ronne", "Black", 80]
+elif cfg.grid_setting == -1:
+    pass
 
-pp_data_base.loc["WindEast"]   = [3, "WindEast",   15.0928, 55.0815, "Wind",
-                                  "sustainable", "Nexo",  "White", 80]
 
-pp_data_base.loc["SolarWest"]  = [4, "SolarWest",  14.7241, 55.1312, "Solar",
-                                  "sustainable", "Ronne", "Orange", 80]
-
-pp_data_base.loc["SolarNorth"] = [5, "SolarNorth", 14.8539, 55.2314, "Solar",
-                                  "sustainable", "Tejn",  "Orange", 80]
-
-pp_data_base.loc["SolarEast"]  = [6, "SolarEast",  15.0877, 55.0408, "Solar",
-                                  "sustainable", "Nexo",  "Orange", 80]
-
-pp_data_base.loc["Cable"]      = [7, "Cable",      14.6898, 55.1884, "Cable",
-                                  "unsustainable", "Ronne", "Black", 80]
 
 pp_data_base = pp_data_base.astype({"PPId": int,
                                     "Name": str,
@@ -113,11 +128,11 @@ solar_power_frac = solar_power/(sum(solar_power))
 f0 = 1/24  # 1/h
 
 # average 1, no low freq contributions
-an = [1, 0, 0, 0, 0, 0]
-bn = [0, 0, 0, 0, 0, 0]
+an = [1, 0, 0, 0, 0]
+bn = [0, 0, 0, 0, 0]
 
 # randomize magnitude and phase of the highest requencies
-an[4:], bn[4:] = 0.6*(npr.random([2, 2])-0.5)
+an[3:], bn[3:] = 0.5*(npr.random([2, 2])-0.5)
 
 # synthesize using vectorized calculations
 N = len(an)

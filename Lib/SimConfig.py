@@ -8,32 +8,44 @@ Created on Fri Nov 13 12:17:38 2020
 
 import numpy as np
 
-
 #%% manual configuration
 
 # rng config
-seed = 1
+seed = 2
 
 # car config
-N = 100  # number of cars
+N = 3  # number of cars
+
+# grid config
+grid_setting = 1
+
+# consumer config kW
+cons_mean = 30000
+cons_peak = 35000
+
+if grid_setting == 1:
+    rel_car_distribution = [1]
+    rel_cons_distribution = [1]
+elif grid_setting == 3:
+    rel_car_distribution = [2, 2, 1]
+    rel_cons_distribution = [3, 1, 1]
+elif grid_setting == -1:
+    raise NotImplementedError("Only grid settings are 1 and 3")
+    
 
 # powerplant config
 max_caps = {"Biomass": 15000,
-            "Wind": 25000,
-            "Solar": 10000,
-            "Cable": 80000,
+            "Wind": 20000,
+            "Solar": 5000,
+            "Cable": 30000,
             }
 
 # power cost
 cs = 1  # relative cost of sustainable power
 cu = 2  # relative cost of unsustainable power
 
-# consumer config kW
-cons_mean = 30000
-cons_peak = 35000
-
 # day config
-K = 12  # number of timeslots
+K = 3  # number of timeslots
 dtday = 10  # daylight hours
 
 # charger config

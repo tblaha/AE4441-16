@@ -154,7 +154,7 @@ class car:
                 for j in range(cfg.K)
                 )
                >= self.E_eff * self.s_day,
-           name="C_" + self.name + "_E_net"
+           name="C_Enet_" + self.name
            )
         
         for j in range(cfg.K - 1):  # for each time slot j
@@ -166,7 +166,7 @@ class car:
                     for jj in range(j+1)
                     )
                 >= self.E_min,
-                name="C_" + self.name + "_" + str(j) + "_E_lb"
+                name="C_Elb_" + self.name + "_" + str(j)
                 )
             
             # after each time step j, car battery may not go above E_max
@@ -177,7 +177,7 @@ class car:
                     for jj in range(j+1)
                     )
                 <= self.E_max,
-                name="C_" + self.name + "_" + str(j) + "_E_ub"
+                name="C_Eub_" + self.name + "_" + str(j)
                 )
 
 

@@ -78,6 +78,9 @@ class netgif():
                 self.cb = plt.colorbar(self.grid_quivers)
                 self.cb.set_label("% Load", fontsize=16)
                 
+                # make legend
+                self._make_legend(grid, grid_links, cars_data, pp_data, cons_data)
+                
                 # make title
                 plt.title("Network at " + str(times[j]) 
                                  + "h to " + str(times2[j]) + "h",
@@ -97,6 +100,23 @@ class netgif():
                 # remain
                 self._clean_plot()
         
+    def _make_legend(self):
+        # official matplotlib beun to get custom legends...
+        # https://matplotlib.org/3.1.1/gallery/text_labels_and_annotations/custom_legends.html
+        custom_lines = [
+            mpl.lines.Line2D([0], [0],
+                             marker="*",
+                             markersize=15,
+                             linestyle="",
+                             linewidth=1,
+                             color="Purple",
+                             # edgecolor="black",
+                             label="Consumers"
+                             )
+            ]
+        
+        # add cars as tiny dots!
+        self.legend = self.fig.legend(handles=custom_lines)
         
             
     def _add_grid(self):
@@ -291,6 +311,7 @@ class netgif():
         self.pp_quivers.remove()
         self.cons_scatter.remove()
         self.cons_quivers.remove()
+        self.legend.remove()
 
         
 
