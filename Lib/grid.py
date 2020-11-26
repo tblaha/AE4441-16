@@ -220,22 +220,22 @@ class link():
             lp = model.addVar(
                     lb = 0,
                     ub = self.cap,
-                    obj = 1e-6,   # TODO: fix this with some sort of 
+                    obj = 1e-6,   # Done: fix this with some sort of 
                                   # regularization so we don't get speedy 
                                   # currents running round in circles...
                     vtype = GRB.CONTINUOUS,
-                    name = "L+_" + str(self.name) + "-" + self.conn1 + "-"
+                    name = "Lp_" + str(self.name) + "-" + self.conn1 + "-"
                             + self.conn2 + "_" + str(j),
                     )
             
             lm = model.addVar(
                     lb = 0,
                     ub = self.cap,
-                    obj = 1e-6,   # TODO: fix this with some sort of 
+                    obj = 1e-6,    # Done: fix this with some sort of 
                                    # regularization so we don't get speedy 
                                    # currents running round in circles...
                     vtype = GRB.CONTINUOUS,
-                    name = "L-_" + str(self.name) + "-" + self.conn1 + "-"
+                    name = "Ln_" + str(self.name) + "-" + self.conn1 + "-"
                             + self.conn2 + "_" + str(j),
                     )
             

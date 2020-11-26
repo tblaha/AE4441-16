@@ -45,7 +45,8 @@ class car:
         self.P_chargers\
             = charger_stat[cars_data["Car Type"].iat[0]]\
                 .to_numpy().astype(float)
-                                
+        
+        self.Del = np.array([-1, 1])
         
 #%% Variables and Bounds
     def create_vars(self, 
@@ -58,12 +59,14 @@ class car:
         
         self.Xi = list()
         self.Yi = list()
+        self.Dxpi = list()
+        self.Dxni = list()
         for j in range(cfg.K):  # for each time slot j:
             
             # CONTINUOUS charging power variable
             # this does the heavy lifting of adding to model
             x = model.addVar(
-                lb = -1e100,
+                lb = -1e100, # gurobi manual says do this...
                 ub = +1e100,
                 obj = 0.0, # not in obj directly (see create_constrs 
                                                 # of grid.py)
@@ -85,6 +88,31 @@ class car:
                 Yij.append(y)
             
             self.Yi.append(Yij)
+            
+            
+            # Derivative variables
+            if (j < cfg.K + 1 - len(self.Del)):
+                # positive derivatives
+                Dxp = model.addVar(
+                        lb = 0,
+                        ub = +1e100,
+                        obj = 1e-6,
+                        vtype=GRB.CONTINUOUS,
+                        name="Dxp_" + self.name + "_" + str(j),
+                        )
+                # negative derivatives
+                Dxn = model.addVar(
+                        lb = 0,
+                        ub = +1e100,
+                        obj = 1e-6,
+                        vtype=GRB.CONTINUOUS,
+                        name="Dxn_" + self.name + "_" + str(j),
+                        )
+                
+                self.Dxpi.append(Dxp)
+                self.Dxni.append(Dxn)
+        
+        
             
         return self.Xi, self.Yi
     
@@ -179,7 +207,37 @@ class car:
                 <= self.E_max,
                 name="C_Eub_" + self.name + "_" + str(j)
                 )
-
+            
+        
+        ## Calculate time derivative of charging rate
+        ###################################################
+        
+        # method: use central finite difference stensil Del = [-1 0 1]
+        #         then convolve (endpoint exclusive!) the stensil with the 
+        #         vector Xi to get (cfg.K - 2) derivatives!
+        #         
+        for j in range(cfg.K + 1 - len(self.Del)):
+            # positive 
+            model.addConstr(
+                # against all odds this doesn't give errors, because numpy 
+                # ignores index bounds for multiselection which is beyond 
+                # shitty in terms of robustness and error-on-unexpected 
+                # philosophy, but necessary since otherwise there would be
+                # no programatic way to select the last N elements of a 
+                # vector because [2:] cannot be programmed. This again 
+                # shows that inclusive indexing is superior.
+                +self.Del @ self.Xi[j:j+len(self.Del)]
+                <= self.Dxpi[j],
+                name="C_Dxp_" + self.name + "_" + str(j)
+                )
+            
+            # negative
+            model.addConstr(
+                -self.Del @ self.Xi[j:j+len(self.Del)]
+                <= self.Dxni[j],
+                name="C_Dxn_" + self.name + "_" + str(j)
+                )
+        
 
 #%% Charger types
 # class charger:

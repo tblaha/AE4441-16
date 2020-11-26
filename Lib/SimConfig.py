@@ -45,7 +45,7 @@ cs = 1  # relative cost of sustainable power
 cu = 2  # relative cost of unsustainable power
 
 # day config
-K = 12  # number of timeslots
+K = 12  # number of timeslots --> minimum 3
 dtday = 10  # daylight hours
 
 # charger config
