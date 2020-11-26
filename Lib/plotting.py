@@ -100,7 +100,7 @@ class netgif():
                 # remain
                 self._clean_plot()
         
-    def _make_legend(self):
+    def _make_legend(self, grid, grid_links, cars_data, pp_data, cons_data):
         # official matplotlib beun to get custom legends...
         # https://matplotlib.org/3.1.1/gallery/text_labels_and_annotations/custom_legends.html
         custom_lines = [
