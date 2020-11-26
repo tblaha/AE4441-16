@@ -46,28 +46,11 @@ array = df.values
 solardata = np.array(array)
 
 
-#%% Creating a list of values (solar_irr_frac) that contains distribution of solar irradiation throughout day 
-
-#Beetje gebeund, but looks at solardata and takes middle point of each timeslot k 
-#as reference for the relative amount of solar energy received at that moment 
-
-solar_power = list()
-a = len(solardata)/cfg.K
-b = 0.5*a
-entries = list()
-entries.append(b)
-for k in range(cfg.K):
-    c = b + k*a
-    entries.append(c)
-
-for k in range(len(solardata)):
-      if k in entries: 
-        solar_power.append((solardata[k][1]))
-  
-solar_power_frac = solar_power/(sum(solar_power)) #Fraction of solar daily solar energy per timeslot (k)
+#%
 
 
-#%% Similar for the wind power (windpower_frac), assumed to be constant throuhgout the day 
+#%% Similar for the wind power (windpower_frac), assumed to be constant 
+# throuhgout the day 
 
 wind_power = [1] * cfg.K
 wind_power_frac = list()
@@ -80,7 +63,9 @@ for elements in wind_power:
 #Addtion of solar & wind distributions 
 total_distribution_sust = list()
 for i in range(cfg.K):
-    total_distribution_sust.append(w_solar*solar_power_frac[i] + w_wind*wind_power_frac[i])
+    total_distribution_sust.append(w_solar*solar_power_frac[i]
+                                   + w_wind*wind_power_frac[i]
+                                   )
 
 #finding distribution of amount of MWh's sustainable energy during the day
 E_total_sust = list()
@@ -95,11 +80,12 @@ for elements in range(cfg.K):
 #Value 
 print(E_total_sust, ' - In MWh per timeslot (k)')
 print(E_total_unsust, ' - In MWh per timeslot (k) ')  
-print(365.0*(sum(E_total_sust) + sum(E_total_unsust)), 'MWh')              #Verification
+print(365.0*(sum(E_total_sust) + sum(E_total_unsust)), 'MWh')  #Verification
 
-#End note: These two lists above can be used in simple.py, SimpleNet = grid.net, part.
-#          and should make our estimation of daily power distributions due to solar/wind 
-#          more accurate            
+#End note: These two lists above can be used in simple.py, 
+#          SimpleNet = grid.net, part.
+#          and should make our estimation of daily power distributions due to 
+#          solar/wind more accurate            
 
 
 #%%Done 

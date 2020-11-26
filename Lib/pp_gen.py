@@ -7,8 +7,10 @@ Created on Fri Nov 20 18:03:16 2020
 """
 
 import numpy as np
+import numpy.random as npr
 import pandas as pd
 import copy
+import os
 
 # import the global config
 from Lib import SimConfig as cfg
@@ -63,6 +65,73 @@ pp_data_base = pp_data_base.astype({"PPId": int,
                                     })
 
 
+
+#%% get hourly availability for solar power
+
+cwd = os.getcwd()       
+
+#This excel file is for the 31st of March at latitude 55 (Bornholm)
+#From site https://www.pveducation.org/pvcdrom/properties-of-sunlight/calculation-of-solar-insolation
+#Concerns the average solar irradiation at that lattitude [kW/m2]
+instance_name = './Lib/Solar_rad.xlsx' #Importing excel file with solar irradiance 
+
+#Excel -> pandas dataframe -> numpy array 
+df = pd.read_excel(os.path.join(cwd,instance_name)) 
+array = df.values 
+solardata = np.array(array)
+
+
+# Creating a list of values (solar_irr_frac) that contains distribution of 
+# solar irradiation throughout day 
+#Beetje gebeund, but looks at solardata and takes middle point of each timeslot
+#k as reference for the relative amount of solar energy received at that moment 
+
+solar_power = list()
+a = len(solardata)/cfg.K
+b = 0.5*a
+entries = list()
+entries.append(b)
+for k in range(cfg.K):
+    c = b + k*a
+    entries.append(c)
+
+for k in range(len(solardata)):
+      if k in entries: 
+        solar_power.append((solardata[k][1]))
+
+#Fraction of solar daily solar energy per timeslot (k)
+solar_power_frac = solar_power/(sum(solar_power)) 
+
+
+#%% get hourly availability of wind power
+
+# https://www.researchgate.net/figure/Shares-of-PV-and-Wind-supply-hourly-pro-fi-le-2011_fig3_283240342
+
+# fourier series
+
+# fundamental
+f0 = 1/24  # 1/h
+
+# average 1, no low freq contributions
+an = [1, 0, 0, 0, 0, 0]
+bn = [0, 0, 0, 0, 0, 0]
+
+# randomize magnitude and phase of the highest requencies
+an[4:], bn[4:] = 0.6*(npr.random([2, 2])-0.5)
+
+# synthesize using vectorized calculations
+N = len(an)
+argu = np.array(
+    2*np.pi*f0 
+    * np.matrix(cfg.t).T * np.arange(0, N)
+    )
+
+wind_power_frac = np.cos(argu) @ an - np.sin(argu) @ bn
+
+# normalize to make sure that sum will be 1
+wind_power_frac /= sum(wind_power_frac)
+
+
 #%% powerplant data frame --> timeslot-dependent attributes
 
 # figure out how many pwoer plants we have per type (wind, solar...)
@@ -77,10 +146,13 @@ pp_data = pp_data_base.loc[
 
 
 # capacity time distribution
-lambda_sol = np.cos(2*np.pi/24 * (12 - cfg.dtday/2 ))  # cosine adjustment to guarantee daylight hours
+# cosine adjustment to guarantee daylight hours
+lambda_sol = np.cos(2*np.pi/24 * (12 - cfg.dtday/2 ))  
 cap_distr = {"Biomass": np.ones(cfg.K),
-             "Wind": 1 + 0.25 * np.sin(2*np.pi/24 * cfg.t),
-             "Solar": np.maximum(0, lambda_sol - np.cos(2*np.pi/24 * cfg.t)),
+             # "Wind": 1 + 0.25 * np.sin(2*np.pi/24 * cfg.t),
+             "Wind": wind_power_frac,
+             # "Solar": np.maximum(0, lambda_sol - np.cos(2*np.pi/24 * cfg.t)),
+             "Solar": solar_power_frac,
              "Cable": np.ones(cfg.K),
              }
 
@@ -90,14 +162,14 @@ for key, val in cfg.max_caps.items():
     pp_data.loc[pp_bool, "Time"] = np.tile(np.arange(cfg.K), pp_num[key])
     pp_data.loc[pp_bool, "Cap"] = (
         cfg.max_caps[key] # max capacity 
-        * np.tile(cap_distr[key] / np.max(cap_distr[key]), # normalized rel cap
+        * np.tile(cap_distr[key] / np.max(cap_distr[key]), #normalized rel cap
                   pp_num[key]) # repeated for how many plants we have
         / pp_num[key])  # since cfg.max_caps is the overall cap; devide by 
                         # number of plants for this type of energy
 
     pp_data.loc[pp_bool, "Load"] = 0.0
 
-pp_data = pp_data.astype({"Time": int,                                  "Time": int,
+pp_data = pp_data.astype({"Time": int,
                           "Cap": float,
                           "Load": float,
                           })
