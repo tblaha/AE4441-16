@@ -111,11 +111,10 @@ class net:
             p_p_idx = pp_data_base.loc[pp_data_base["GridConn"] == index, 
                                        "PPId"]
             
-            print(index)
             for j in range(cfg.K):
                 # sum of customer demands at this location
                 d_sum = -n_d.iat[j]
-                print(p_l_idx)
+                
                 __ = [ self.links[i].L for i in p_l_idx ]
                 # sum of links
                 l_sum = ( sum([ self.links[i].L[j] for i in p_l_idx ])
@@ -178,7 +177,7 @@ class powerplant:
         for j in range(cfg.K):  # for each time slot j:
                 
             # this does the heavy lifting of adding the vars to model
-            lb = -self.p_s[j] if self.name == "Cable" else 0.0
+            lb = -self.p_s[j] if self.name == "SeaCable" else 0.0
             p = model.addVar( 
                     lb = lb,
                     ub = self.p_s[j],  # upper bound: 

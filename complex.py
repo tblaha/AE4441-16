@@ -46,6 +46,7 @@ from Lib.cons_gen import cons_data_base, cons_data
 from Lib import cars as cs
 from Lib import grid as gd
 from Lib import SimConfig as cfg
+from Lib import metrics as mt
 
 print("OK!")
 
@@ -219,6 +220,11 @@ print("OK!")
 
 
 
+#%% calculate metrics
+
+h=mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
+
+
 #%% plotting
 
 if cartopy_exists:
@@ -228,7 +234,7 @@ if cartopy_exists:
     outpath = "./plots/"
     fnamebase = "test"
     
-    if cfg.grid_setting == -1:
+    if cfg.grid_setting == 1:
         map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
     else:
         map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm 

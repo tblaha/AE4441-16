@@ -14,14 +14,14 @@ import numpy as np
 seed = 2
 
 # car config
-N = 100  # number of cars
+N = 500  # number of cars
 
 # grid config
 grid_setting = -1
 
 # consumer config kW
 cons_mean = 30000
-cons_peak = 35000
+cons_peak = 38000
 
 if grid_setting == 1:
     rel_car_distribution = [1]
@@ -48,7 +48,7 @@ cs = 1  # relative cost of sustainable power
 cu = 2  # relative cost of unsustainable power
 
 # day config
-K = 12  # number of timeslots --> minimum 3
+K = 24  # number of timeslots --> minimum 3
 dtday = 10  # daylight hours
 
 # charger config

@@ -59,16 +59,16 @@ elif cfg.grid_setting == 3:
     grid_links_base["LinkId"] = grid_links_base.index
     
 elif cfg.grid_setting == -1:
-    grid.loc["Akirkeby"]     = [14.897778, 55.068056, 1500, "60kV", "Pink", 200]
+    grid.loc["Akirkeby"]     = [14.897778, 55.068056, 3000, "60kV", "Pink", 200]
     grid.loc["Allinge"]      = [14.800278, 55.268333, 1500, "60kV", "Pink", 200]
     grid.loc["Bodilsker"]    = [15.065833, 55.063056, 1500, "60kV", "Pink", 200]
     grid.loc["Dalslunde"]    = [15.050833, 55.100000, 1500, "60kV", "Pink", 200]
     grid.loc["Gudhjem"]      = [14.953056, 55.199167, 1500, "60kV", "Pink", 200]
     grid.loc["Hasle"]        = [14.723333, 55.170278, 1500, "60kV", "Pink", 200]
     grid.loc["Nexo"]         = [15.115833, 55.063056, 1500, "60kV", "Pink", 200]
-    grid.loc["Olsker"]       = [14.795556, 55.231944, 1500, "60kV", "Pink", 200]
-    grid.loc["Osterlars"]    = [14.935000, 55.153333, 1500, "60kV", "Pink", 200]
-    grid.loc["Poulsker"]     = [15.055833, 55.022222, 1500, "60kV", "Pink", 200]
+    grid.loc["Olsker"]       = [14.795556, 55.231944, 4500, "60kV", "Pink", 200]
+    grid.loc["Osterlars"]    = [14.935000, 55.153333, 4500, "60kV", "Pink", 200]
+    grid.loc["Poulsker"]     = [15.055833, 55.022222, 3000, "60kV", "Pink", 200]
     grid.loc["Ronne"]        = [14.713889, 55.097778, 1500, "60kV", "Pink", 200]
     grid.loc["Ronne Nord"]   = [14.707778, 55.111111, 1500, "60kV", "Pink", 200]
     grid.loc["Ronne Syd"]    = [14.730556, 55.089722, 1500, "60kV", "Pink", 200]
