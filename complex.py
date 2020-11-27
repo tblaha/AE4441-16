@@ -96,8 +96,8 @@ for j in range(cfg.K):
         for k, p in enumerate(cfg.p_work_charger_type):
             am.addConstr( # the product makes sure we only count work chargers
                 sum([car.Yi[j][k] * (car.Ch_constr[j] == -1).astype(float)
-                      for car in cars
-                      ]) <= np.ceil(p*cfg.num_work_charger),
+                     for car in cars
+                     ]) <= np.ceil(p*cfg.num_work_charger),
                 name="C_numCh_" + str(j) + "_" + str(k),
                 )
     else:
@@ -241,8 +241,8 @@ if cartopy_exists:
     outpath = "./plots/"
     fnamebase = "test"
     
-    if cfg.grid_setting == 1:
-        map_extent = [14.66, 14.76, 55.07, 55.135]; zoomlevel = 13; # Ronne
+    if cfg.grid_setting == -1:
+        map_extent = [14.66, 14.78332, 55.07, 55.135]; zoomlevel = 13; # Ronne
     else:
         map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm 
     

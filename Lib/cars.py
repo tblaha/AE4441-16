@@ -57,6 +57,7 @@ class car:
         Yijk: the binarys describing the charging setting to use at instant j
             """
         
+        
         self.Xi = list()
         self.Yi = list()
         self.Dxpi = list()
@@ -83,6 +84,7 @@ class car:
             for k, __ in enumerate(self.P_chargers):
                 y = model.addVar(
                     vtype=GRB.BINARY,
+                    obj = 1e-6,
                     name="Y_" + self.name + "_" + str(j) + "_" + str(k)
                     )
                 Yij.append(y)
@@ -113,8 +115,19 @@ class car:
                 self.Dxni.append(Dxn)
         
         
+        # assign one additional variable to the cars the describe the one 
+        # single choice of a charger access at work
+        self.Yiwork = []
+        for k, __ in enumerate(self.P_chargers):
+            y = model.addVar(
+                vtype=GRB.BINARY,
+                obj=1e-6,
+                name="Y_work_" + self.name + "_" + str(k)
+                )
+            self.Yiwork.append(y)
+        
             
-        return self.Xi, self.Yi
+        return self.Xi, self.Yi, self.Yiwork
     
     
     
@@ -123,10 +136,20 @@ class car:
                        model,  # the gurobi model to which to add the constrs
                        ):
         
-        # Pmax = 
+        
         
         ## Charging power maximum selection
         ###############################################
+        # make the algorithm able to assign max _one_ work charger to a car. 
+        # This doesn't mean that the car _has_ to have on at work or use it 
+        # all the time; it merely means that it may get access to at most one.
+        for k, __ in enumerate(self.P_chargers):
+            model.addConstr(
+                sum(self.Yiwork) <= 1,
+                name="C_OOOMWork_" + self.name + "_" + str(k),
+                )
+        
+        
         for j in range(cfg.K):  # for each time slot j
             
             # charger power lower and upper bounds
@@ -143,12 +166,15 @@ class car:
             # charger selection for each car
             ch = self.Ch_constr[j]
             if ch == -1:
-                # we can freely select one charger that the car will use that
-                # day for all time slots with "-1" as charger type
-                model.addConstr(
-                    sum(self.Yi[j]) <= 1,
-                    name="C_OOOM_" + self.name + "_" + str(j),
-                    )
+                # that charger that will be used at work is chosed in the 
+                # Yiwork binary, so here we need to make sure that that choice
+                # is the only possible choice for the relevant hourly binaries
+                # Yi[j]
+                for k, __ in enumerate(self.P_chargers):
+                    model.addConstr(
+                        self.Yi[j][k] <= self.Yiwork[k],
+                        name="C_WorkAssign_" + self.name + "_" + str(j) + "_" + str(k),
+                        )
             elif ch == 0:
                 # Car is on the road; no charger, sadface
                 model.addConstr(
