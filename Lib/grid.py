@@ -224,7 +224,7 @@ class link():
                                   # regularization so we don't get speedy 
                                   # currents running round in circles...
                     vtype = GRB.CONTINUOUS,
-                    name = "Lp_" + str(self.name) + "-" + self.conn1 + "-"
+                    name = "Lp_" + str(self.name) + "_" + self.conn1 + "2"
                             + self.conn2 + "_" + str(j),
                     )
             
@@ -235,7 +235,7 @@ class link():
                                    # regularization so we don't get speedy 
                                    # currents running round in circles...
                     vtype = GRB.CONTINUOUS,
-                    name = "Ln_" + str(self.name) + "-" + self.conn1 + "-"
+                    name = "Ln_" + str(self.name) + "-" + self.conn1 + "2"
                             + self.conn2 + "_" + str(j),
                     )
             

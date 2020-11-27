@@ -79,12 +79,12 @@ elif cfg.grid_setting == -1:
     pp_data_base.loc["SolarNorth", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
       [14.84209, 55.24465, "Solar",    "sustainable", "Olsker", "Orange", 80]
     pp_data_base.loc["SolarWest", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
-      [14.73486, 55.11800, "Solar",    "sustainable", "Ronne Nord", "Orange", 80]
+      [14.73486, 55.11800, "Solar",    "sustainable", "RonneNord", "Orange", 80]
     pp_data_base.loc["SolarEast", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
       [15.09376, 55.01898, "Solar",    "sustainable", "Poulsker", "Orange", 80]
       
     pp_data_base.loc["SeaCable", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
-      [14.68108, 55.18534, "Cable",    "unsustainable", "Hasle", "Black", 80]
+      [14.669080, 55.167127, "Cable",    "unsustainable", "Hasle", "Black", 80]
     
     pp_data_base["PPId"] = range(9)
     pp_data_base["Name"] = pp_data_base.index
