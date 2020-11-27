@@ -194,10 +194,17 @@ for i, car in enumerate(cars):
     
     # add the charging load
     cars_data.loc[car_bool, "Load"] = np.array([Xtemp.X for Xtemp in car.Xi])
-    cars_data.loc[car_bool, "Cap"] \
+    cars_data.loc[car_bool, "Actual Charger Type"] \
+        = ((np.arange(len(car.P_chargers)) + 1)
+                @ np.array(
+                    [Ytemp.X for Yij in car.Yi for Ytemp in Yij])
+                        .reshape(cfg.K,
+                                 len(car.P_chargers)
+                                 ).T).astype(int)
+    cars_data.loc[car_bool, "Charger Power"] \
         = (car.P_chargers
                 @ np.array(
-                    [Ytemp.X for Yij in car.Yi for Ytemp in Yij])\
+                    [Ytemp.X for Yij in car.Yi for Ytemp in Yij])
                         .reshape(cfg.K,
                                  len(car.P_chargers)
                                  ).T)

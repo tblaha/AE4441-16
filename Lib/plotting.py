@@ -52,7 +52,7 @@ class netgif():
         self._add_grid()
         
         # max capacity for each car and powerplant when aggregated over the day
-        car_caps = cars_data.groupby(["CarId"])["Cap"].max()
+        car_caps = cars_data.groupby(["CarId"])["Charger Power"].max()
         pp_caps  = pp_data.groupby(["Name"])["Cap"].max()
         
         # iterate over discrete times k
