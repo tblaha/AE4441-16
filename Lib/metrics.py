@@ -84,11 +84,12 @@ def _make_annot(cars, cars_data, cars_bool, load_max, axs, car_id):
     
     #%% Figure out charger types
             
-    ct = cars_data.loc[cars_data["CarId"]==car_id, "Charger type"].to_numpy()
+    ct = cars_data.loc[cars_bool, "Charger type"].to_numpy()
+    cp = cars_data.loc[cars_bool, "Charger Power"].to_numpy()
     r = np.arange(cfg.K)
     first_non_home = r[ct != ct[0]][0]
     last_non_home  = r[ct != ct[0]][-1]
-    first_work     = r[ct == -1][0]
+    charger_work_power = max(cp[ct == -1])
     
     
     #%% make textbox
@@ -96,7 +97,7 @@ def _make_annot(cars, cars_data, cars_bool, load_max, axs, car_id):
 r'Car Id = %s' % (cars[car_id].name, ),
 r'Car Type = %s' % (cars_data.loc[cars_bool, "Car Type"].iat[0], ),
 r'Homecharger Capacity = %d kW' % (cars_data.loc[cars_bool, "Charger Power"].iat[0], ),
-r'Workcharger Capacity = %d kW' % (cars_data.loc[cars_bool, "Charger Power"].iat[first_work], ),
+r'Workcharger Capacity = %d kW' % (charger_work_power, ),
 r'Net Energy = %.2f kWh' % (cfg.dt[0] * sum(cars_data.loc[cars_bool, "Load"])
                                , ),
 r'Driven Energy = %.2f kWh' % (
@@ -116,7 +117,7 @@ cars_data.loc[cars_bool, "Distance Driven"].iat[0]
     aprops=dict(arrowstyle='<->', mutation_scale=20)
     xy_s = [cfg.t[0],
             cfg.t[first_non_home-1],
-            cfg.t[last_non_home+1],
+            cfg.t[last_non_home],
             cfg.t[-1]
             ]
     texts = ["Home", "Work", "Home"]
@@ -155,7 +156,6 @@ def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
         load_max = max(load_max, np.max(car_load))
         
         if (i == 0) and make_annot:
-            
             axs = _make_annot(cars, cars_data, cars_bool, load_max, axs, car_id)
     
     axs.grid()
@@ -165,9 +165,6 @@ def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
     axs.set_ylim(top=load_max*1.5)
     if not make_annot:
         axs.legend(loc="upper left", fontsize=12)
-    
-    # return fig
-    
     
     
 def car_plot_line(cars, cars_data, car_ids, make_annot=False):
@@ -190,10 +187,7 @@ def car_plot_line(cars, cars_data, car_ids, make_annot=False):
         load_max = max(load_max, np.max(car_load))
         
         if (i == 0) and make_annot:
-            
             axs = _make_annot(cars, cars_data, cars_bool, load_max, axs, car_id)
-            
-            
     
     axs.grid()
     axs.set_xlim(left=0, right=24)
@@ -203,5 +197,3 @@ def car_plot_line(cars, cars_data, car_ids, make_annot=False):
     
     if not make_annot:
         axs.legend(loc="upper left", fontsize=12)
-    
-    # return fig
