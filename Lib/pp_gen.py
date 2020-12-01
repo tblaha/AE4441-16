@@ -38,7 +38,7 @@ if cfg.grid_setting == 1:
                                       "sustainable", "Ronne", "Brown", 80]
     pp_data_base.loc["WindWest"]   = [1, "WindWest",   14.7491, 55.0809, "Wind",
                                       "sustainable", "Ronne", "White", 80]
-    pp_data_base.loc["Cable"]      = [2, "Cable",      14.6898, 55.1884, "Cable",
+    pp_data_base.loc["SeaCable"]      = [2, "SeaCable",      14.6898, 55.1884, "Cable",
                                       "unsustainable", "Ronne", "Black", 80]
     pp_data_base.loc["SolarWest"]  = [3, "SolarWest",  14.7241, 55.1312, "Solar",
                                       "sustainable", "Ronne", "Orange", 80]
@@ -61,7 +61,7 @@ elif cfg.grid_setting == 3:
     
     pp_data_base.loc["SolarEast"]  = [6, "SolarEast",  15.0877, 55.0408, "Solar",
                                       "sustainable", "Nexo",  "Orange", 80]
-    pp_data_base.loc["Cable"]      = [7, "Cable",      14.6898, 55.1884, "Cable",
+    pp_data_base.loc["SeaCable"]      = [7, "SeaCable",      14.6898, 55.1884, "Cable",
                                       "unsustainable", "Ronne", "Black", 80]
 elif cfg.grid_setting == -1:
     pp_data_base.loc["Kraftvaerk", ["Long","Lat","Type","Sustainability","GridConn","Color","Size"]] = \
@@ -129,14 +129,16 @@ entries = list()
 entries.append(b)
 for k in range(cfg.K):
     c = b + k*a
-    entries.append(c)
+    entries.append(int(c)) # yo dawg, I heard you like beun, so I beunfixed your beunfix
 
 for k in range(len(solardata)):
-      if k in entries: 
+      if k in entries: # this is beun as it requires entries to be integers instead of somehow interpolating; bad bad, makes code go breaky; obviously beunfixed with int(c) above
         solar_power.append((solardata[k][1]))
 
 #Fraction of solar daily solar energy per timeslot (k)
 solar_power_frac = solar_power/(sum(solar_power)) 
+
+
 
 
 #%% get hourly availability of wind power
