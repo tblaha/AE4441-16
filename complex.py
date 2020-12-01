@@ -47,6 +47,7 @@ from Lib import cars as cs
 from Lib import grid as gd
 from Lib import SimConfig as cfg
 from Lib import metrics as mt
+from Lib import errors as err
 
 print("OK!")
 
@@ -159,6 +160,10 @@ print("\n\ncomplex.py: ------------------\n\n")
 
 am.optimize()
 
+# check if model was feasible
+if am.Status != 2:
+    raise err.FeasibilityError("Gurobi determined that the model is infeasible.")
+
 
 print("\n\ncomplex.py: ----------------\n\n")
 
@@ -200,7 +205,7 @@ for i, car in enumerate(cars):
                     [Ytemp.X for Yij in car.Yi for Ytemp in Yij])
                         .reshape(cfg.K,
                                  len(car.P_chargers)
-                                 ).T).astype(int)
+                                 ).T)
     cars_data.loc[car_bool, "Charger Power"] \
         = (car.P_chargers
                 @ np.array(
@@ -222,6 +227,8 @@ for i, l in enumerate(AdvancedNet.links):
     grid_links.loc[l_bool, "Load"] = np.array([Xtemp.X for Xtemp in l.Lp]) \
                                       - np.array([Xtemp.X for Xtemp in l.Lm])
 
+cars_data["Actual Charger Type"] \
+    = cars_data["Actual Charger Type"].astype(int)
 
 print("OK!")
 
@@ -230,6 +237,8 @@ print("OK!")
 #%% calculate metrics
 
 h=mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
+mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
+mt.charger_pie(cars_data)
 
 
 #%% plotting

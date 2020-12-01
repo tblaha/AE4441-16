@@ -276,6 +276,12 @@ cars_data.loc[(np.tile(time_data, cfg.N) > npr.random(cfg.N * cfg.K)*100),
               "Charger type",
               ] = 0
 
+# make cars that have no 0-timeslot be stay-at-home cars with 0 distance driven
+for i, ctype in cars_data.groupby("CarId")["Charger type"].unique().iteritems():
+    if 0 not in ctype:
+        cars_bool = cars_data["CarId"] == i
+        cars_data.loc[cars_bool, "Distance Driven"] = 0
+
   
 # make sure of datatypes    
 cars_data = cars_data.astype({'Time': int,
