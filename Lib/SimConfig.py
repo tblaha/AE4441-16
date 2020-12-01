@@ -14,7 +14,7 @@ import numpy as np
 seed = 2
 
 # car config
-N = 500  # number of cars
+N = 250  # number of cars
 
 # grid config
 grid_setting = -1
@@ -48,7 +48,7 @@ cs = 1  # relative cost of sustainable power
 cu = 2  # relative cost of unsustainable power
 
 # day config
-K = 24  # number of timeslots --> minimum 3
+K = 6  # number of timeslots --> minimum 3
 dtday = 10  # daylight hours
 
 # charger config
