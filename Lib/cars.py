@@ -194,7 +194,7 @@ class car:
                     sum([x for i, x in enumerate(self.Yi[j]) if i != (ch-1)])
                         == 0,
                     name="C_OOOMb_" + self.name + "_" + str(j),
-                    )        
+                    )
         
         ## Resulting battery energy constraints 
         ################################################
@@ -208,7 +208,7 @@ class car:
                 for j in range(cfg.K)
                 )
                >= self.E_eff * self.s_day,
-           name="C_Enet_" + self.name
+               name="C_Enet_" + self.name,
            )
         
         for j in range(cfg.K - 1):  # for each time slot j
@@ -217,6 +217,8 @@ class car:
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension; all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Energy changed in timeslot jj
+                    - (self.Ch_constr[jj] == 0).astype(float) 
+                        * self.E_eff * self.s_day 
                     for jj in range(j+1)
                     )
                 >= self.E_min,
@@ -224,10 +226,12 @@ class car:
                 )
             
             # after each time step j, car battery may not go above E_max
-            model.addConstr(  
+            model.addConstr(
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension; all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Energy change in timeslot jj
+                    - (self.Ch_constr[jj] == 0).astype(float) 
+                        * self.E_eff * self.s_day 
                     for jj in range(j+1)
                     )
                 <= self.E_max,
