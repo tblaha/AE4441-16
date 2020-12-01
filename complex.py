@@ -47,6 +47,7 @@ from Lib import cars as cs
 from Lib import grid as gd
 from Lib import SimConfig as cfg
 from Lib import metrics as mt
+from Lib import errors as err
 
 print("OK!")
 
@@ -158,6 +159,10 @@ print("complex.py: Solve the model...")
 print("\n\ncomplex.py: ------------------\n\n")
 
 am.optimize()
+
+# check if model was feasible
+if am.Status != 2:
+    raise err.FeasibilityError("Gurobi determined that the model is infeasible.")
 
 
 print("\n\ncomplex.py: ----------------\n\n")

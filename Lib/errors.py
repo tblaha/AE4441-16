@@ -6,3 +6,5 @@ Created on Fri Nov 13 11:22:37 2020
 @author: tblaha
 """
 
+class FeasibilityError(Exception):
+    pass

@@ -288,17 +288,18 @@ def charger_pie(cars_data):
     exp2fmt = lambda x,pos: f"$10^{{{x:.1f}}}$"
     ax.xaxis.set_major_formatter(FuncFormatter(rad2fmt))
     ax.yaxis.set_major_formatter(FuncFormatter(exp2fmt))
-    ax.set_xlabel("Share of Chargers", fontsize=14)
     ax.set_rlim(bottom=0, top=max(radii))
     ax.set_rlabel_position(150)
     
-    ax.text(np.radians(160),ax.get_rmax()*0.6,'Mean Thruput Energy [kWh]',
+    ax.text(np.radians(160),ax.get_rmax()*0.6,'Mean Throughput\nper Charger [kWh]',
         rotation=-20,ha='center',va='center', fontsize=14)
+    ax.text(np.radians(45),ax.get_rmax()*1.2,'Share of Chargers',
+        rotation=-45,ha='center',va='center', fontsize=14)
     
     #ax.tick_params(label=True)
     ax.tick_params(axis="y", labelsize=14)
     
-    ax.legend(loc="lower right", fontsize=12)
+    ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=12)
     
     plt.show()
 
