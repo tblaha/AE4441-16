@@ -237,8 +237,8 @@ print("OK!")
 #%% calculate metrics
 
 h=mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
-mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
-mt.charger_pie(cars_data)
+#mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
+#mt.charger_pie(cars_data)
 
 
 #%% plotting

@@ -188,7 +188,6 @@ def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
     if not make_annot:
         axs.legend(loc="upper left", fontsize=12)
     
-    
 def car_plot_line(cars, cars_data, car_ids, make_annot=False):
     
     plt.close("all")
@@ -219,7 +218,6 @@ def car_plot_line(cars, cars_data, car_ids, make_annot=False):
     
     if not make_annot:
         axs.legend(loc="upper left", fontsize=12)
-
 
 
 def charger_pie(cars_data):
@@ -300,8 +298,7 @@ def charger_pie(cars_data):
     ax.tick_params(axis="y", labelsize=14)
     
     ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=12)
-    
-    plt.show()
+
 
     
     #ax.legend(loc="upper left", fontsize=12)
