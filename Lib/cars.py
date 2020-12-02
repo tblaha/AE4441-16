@@ -37,14 +37,27 @@ class car:
         self.E_max = 0.9*self.E_bat  # kWh
         self.E_min = 0.1*self.E_bat  # kWh
         
-        # Battery charge at beginning of the day
-        self.E_state = 0.5*(self.E_max + self.E_min)
-        
         # instantiate chargers 
         self.Ch_constr = cars_data["Charger type"].to_numpy()
         self.P_chargers\
             = charger_stat[cars_data["Car Type"].iat[0]]\
                 .to_numpy().astype(float)
+                
+        # Battery charge at beginning of the day
+        self.Num_slots_driving_total = sum(self.Ch_constr == 0)
+        
+        if self.Num_slots_driving_total:
+            Slots_driving_evening \
+                = sum(self.Ch_constr[np.floor(cfg.K*(2/3)).astype(int):] == 0)
+            E_driven_evening\
+                = self.s_day * self.E_eff\
+                   * Slots_driving_evening / self.Num_slots_driving_total
+            self.E_state = np.minimum(self.E_max - E_driven_evening, 
+                                      0.5*(self.E_max + self.E_min)
+                                      )
+        else:
+            self.E_state = 0.5*(self.E_max + self.E_min)
+                
         
         self.Del = np.array([-1, 1])
         
@@ -125,6 +138,14 @@ class car:
                 name="Y_work_" + self.name + "_" + str(k)
                 )
             self.Yiwork.append(y)
+        
+        
+        # soft constraint switch for battery limit constraints
+        self.SoftCon_E = model.addVar(
+                vtype=GRB.BINARY,
+                obj=1e9,
+                name="S_" + self.name + "_Emin",
+                )
         
             
         return self.Xi, self.Yi, self.Yiwork
@@ -207,20 +228,29 @@ class car:
                 self.Xi[j] * cfg.dt[j] # Bat energy changed in timeslot j
                 for j in range(cfg.K)
                 )
+                # + self.SoftCon_E * 1e9
                >= self.E_eff * self.s_day,
                name="C_Enet_" + self.name,
            )
         
         for j in range(cfg.K - 1):  # for each time slot j
+            # Energy "lost" by driving at this point in time
+            if (self.Ch_constr == 0).any():
+                E_lost = sum(self.Ch_constr[0:(j+1)] == 0) \
+                            / sum(self.Ch_constr == 0) \
+                            * self.E_eff * self.s_day
+            else:
+                E_lost = 0
+            
             # after each time step j, car battery may not go below E_min
             model.addConstr( 
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension; all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Energy changed in timeslot jj
-                    - (self.Ch_constr[jj] == 0).astype(float) 
-                        * self.E_eff * self.s_day 
                     for jj in range(j+1)
                     )
+                - E_lost
+                #+ self.SoftCon_E * 1e9
                 >= self.E_min,
                 name="C_Elb_" + self.name + "_" + str(j)
                 )
@@ -230,10 +260,10 @@ class car:
                 self.E_state  # initial battery energy
                 + sum( # sum of list-comprehension; all time slots UP UNTIL j
                     self.Xi[jj] * cfg.dt[jj] # Energy change in timeslot jj
-                    - (self.Ch_constr[jj] == 0).astype(float) 
-                        * self.E_eff * self.s_day 
                     for jj in range(j+1)
                     )
+                - E_lost
+                #+ self.SoftCon_E * 1e9
                 <= self.E_max,
                 name="C_Eub_" + self.name + "_" + str(j)
                 )
