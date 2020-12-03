@@ -164,11 +164,11 @@ class car:
         # make the algorithm able to assign max _one_ work charger to a car. 
         # This doesn't mean that the car _has_ to have on at work or use it 
         # all the time; it merely means that it may get access to at most one.
-        for k, __ in enumerate(self.P_chargers):
-            model.addConstr(
-                sum(self.Yiwork) <= 1,
-                name="C_OOOMWork_" + self.name + "_" + str(k),
-                )
+        #for k, __ in enumerate(self.P_chargers):
+        model.addConstr(
+            sum(self.Yiwork) <= 1,
+            name="C_OOOMWork_" + self.name,# + "_" + str(k),
+            )
         
         
         for j in range(cfg.K):  # for each time slot j
