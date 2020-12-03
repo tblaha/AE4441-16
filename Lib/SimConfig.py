@@ -13,8 +13,7 @@ import numpy as np
 # rng config
 seed = 2
 
-# car config
-N = 50  # number of cars
+N = 500  # number of cars
 
 # grid config
 grid_setting = -1
@@ -37,7 +36,7 @@ elif grid_setting == -1:
     
 
 # powerplant config
-max_caps = {"Biomass": 15000,
+max_caps = {"Biomass": 15000*4,
             "Wind": 20000,
             "Solar": 5000,
             "Cable": 25000,

@@ -10,8 +10,8 @@ Created on Fri Nov 13 11:34:21 2020
 
 print("complex.py: Clearing workspace", end='... ')
 
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
+# from IPython import get_ipython
+# get_ipython().magic('reset -sf')
 
 print("OK!")
 
@@ -48,6 +48,7 @@ from Lib import grid as gd
 from Lib import SimConfig as cfg
 from Lib import metrics as mt
 from Lib import errors as err
+from Lib import sensitivity as se
 
 print("OK!")
 
@@ -237,9 +238,13 @@ print("OK!")
 #%% calculate metrics
 
 h=mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
-#mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
-#mt.charger_pie(cars_data)
-
+# plt.show()
+# mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
+# plt.show()
+# mt.car_plot_line(cars, cars_data, [0], make_annot=True)
+# plt.show()
+# mt.charger_pie(cars_data)
+# plt.show()
 
 #%% plotting
 

@@ -55,6 +55,7 @@ def power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data):
     axs.plot(cfg.t, cars_loads + cons_loads,
                 color='blue', lw=4, ls="--", label="Domestic Load + EVs")
     
+    
     # plot net import by cable as a stack plot around the 0 axis
     net_stack = axs.stackplot(cfg.t, pp_np[0, :], colors=["black"],
                                  labels=["Net Import by Cable"])
