@@ -157,7 +157,7 @@ cars_data.loc[cars_bool, "Distance Driven"].iat[0]
                      fontsize=14,
                      )
     
-    return axs
+    return fig
 
 
 def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
@@ -186,7 +186,9 @@ def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
     axs.set_ylabel("Charging Power [kW], + charge, - discharge", fontsize=16)
     axs.set_ylim(top=load_max*1.5)
     if not make_annot:
-        axs.legend(loc="upper left", fontsize=12)
+        axs.legend(loc="upper left", fontsize=14)
+
+    return fig
     
 def car_plot_line(cars, cars_data, car_ids, make_annot=False):
     
@@ -217,7 +219,9 @@ def car_plot_line(cars, cars_data, car_ids, make_annot=False):
     axs.set_ylim(top=load_max*1.5)
     
     if not make_annot:
-        axs.legend(loc="upper left", fontsize=12)
+        axs.legend(loc="upper left", fontsize=14)
+
+    return fig
 
 
 def charger_pie(cars_data):
@@ -297,8 +301,37 @@ def charger_pie(cars_data):
     #ax.tick_params(label=True)
     ax.tick_params(axis="y", labelsize=14)
     
-    ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=12)
+    ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=14)
 
-
+    return fig
     
     #ax.legend(loc="upper left", fontsize=12)
+    
+    
+def car_plot_bar(grid_links1, grid_links2, names, time):
+    
+    plt.close("all")
+    fig, axs = plt.subplots(1, 1, constrained_layout=True, figsize=(9, 6))
+    # beun = cfg.dt[0]*(0.9/len(car_ids))
+    
+    link_loads1 = grid_links1.groupby("Time")[["LinkId", "Load"]]\
+                    .get_group(time).set_index("LinkId")
+    link_loads2 = grid_links2.groupby("Time")[["LinkId", "Load"]]\
+                    .get_group(time).set_index("LinkId")
+    
+    L = link_loads1.size
+    
+    axs.bar(link_loads1.index.astype(float)-0.2, link_loads1["Load"], width=0.4,
+            label=names[0])
+    axs.bar(link_loads2.index.astype(float)+0.2, link_loads2["Load"], width=0.4,
+            label=names[1])
+    
+    plt.grid(axis="y")
+    axs.set_xlim(left=-1, right=L)
+    axs.set_xlabel("Link Id", fontsize=16)
+    axs.set_ylabel("Power Flow [kW]", fontsize=16)
+    # axs.set_ylim(top=load_max*1.5)
+    axs.legend(loc="upper right", fontsize=14)
+    axs.set_xticks(range(L))
+
+    return fig
