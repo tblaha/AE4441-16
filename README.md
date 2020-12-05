@@ -9,7 +9,7 @@ To run, download the repo and run complex.py from its working directory. Observe
 Basic simulation settings can be changed in ./Lib/SimConfig.py.
 
 Additional scripts, mainly for verification, post-processing of LP files, and clustering of the output are in the root folder. Library files and functions in ./Lib/ are never supposed to be run by themselves; the need to be imported from the ./ working directory using, for instance:
-''' from Lib import cars_gen as cg'''
+``` from Lib import cars_gen as cg```
 
 
 
@@ -22,13 +22,13 @@ Additional scripts, mainly for verification, post-processing of LP files, and cl
 ## Additional general purpose python modules
 
 For visualization. What is supposed to work:
-'''
+```
 conda install numpy scipy matplotlib pandas networkx seaborn
 conda install -c conda-forge cartopy
-'''
+```
 
 What worked on my Linux distro
-'''
+```
 conda install numpy scipy matplotlib pandas networkx
 conda install geos cython shapely pyshp six
 conda install "proj4<5"
@@ -37,7 +37,7 @@ conda install "proj4<5"
 git clone https://github.com/SciTools/cartopy.git
 cd cartopy
 python setup.py install
-'''
+```
 
 ## Install Gurobi: we only need to install the python module (note: if you're a pip guy, see https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_using_pip_to_install_gr.html):
 1. Get Anaconda (or just conda, as you prefer) for your operating system --> 64bit only!
