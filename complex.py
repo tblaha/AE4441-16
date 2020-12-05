@@ -236,7 +236,8 @@ print("OK!")
 
 #%% calculate metrics
 
-h=mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
+power_plot = mt.power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data)
+pie_plot   = mt.charger_pie(cars_data)
 #mt.car_plot_bar(cars, cars_data, [0], make_annot=True)
 #mt.charger_pie(cars_data)
 
@@ -250,7 +251,7 @@ if cartopy_exists:
     outpath = "./plots/"
     fnamebase = "test"
     
-    if cfg.grid_setting == -1:
+    if cfg.grid_setting == 1:
         map_extent = [14.66, 14.78332, 55.07, 55.135]; zoomlevel = 13; # Ronne
     else:
         map_extent = [14.65, 15.2, 54.97, 55.31]; zoomlevel = 10; # all of Bornholm 

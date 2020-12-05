@@ -100,6 +100,8 @@ def power_plot(cars, cars_data, AdvancedNet, pp_data, grid_links, cons_data):
     #%% save and return
     
     plt.savefig("./plots/PowerHourly.eps")
+    
+    return fig
 
 
 def _make_annot(cars, cars_data, cars_bool, load_max, axs, car_id):
@@ -157,7 +159,7 @@ cars_data.loc[cars_bool, "Distance Driven"].iat[0]
                      fontsize=14,
                      )
     
-    return fig
+    #return fig
 
 
 def car_plot_bar(cars, cars_data, car_ids, make_annot=False):
@@ -236,21 +238,21 @@ def charger_pie(cars_data):
     
     #ax.set_ylim(top=load_max*1.5)
     home_charger_choice = cars_data.groupby("CarId").first()\
-                                   .groupby("Actual Charger Type").size()*1e-3
+                                   .groupby("Actual Charger Type").size()
     
     gross_home_charger_load \
         = cars_data.loc[cars_data["Charger type"] > 0, :]\
-            .groupby("Charger type")["Load"].apply(lambda x: sum(abs(x)))*1e-3
+            .groupby("Charger type")["Load"].apply(lambda x: sum(abs(x)))
             
     work_charger_choice \
         = cars_data.loc[cars_data["Charger type"] == -1, :]\
             .groupby(["Time", "Actual Charger Type"]).size()\
-            .groupby("Actual Charger Type").max()*1e-3
+            .groupby("Actual Charger Type").max()
     
     gross_work_charger_load \
         = cars_data.loc[cars_data["Charger type"] == -1, :]\
             .groupby("Actual Charger Type")["Load"]\
-                .apply(lambda x: sum(abs(x)))*1e-3
+                .apply(lambda x: sum(abs(x)))
     
     # going by car objects:
     # b = np.array([max([sum([cars[i].Yi[j][k].X for i in range(len(cars))]) for j in range(6, 18)]) for k in range(4)])
@@ -267,8 +269,8 @@ def charger_pie(cars_data):
     
     radii = np.zeros_like(width)
     radii[:len(home_charger_choice)] = gross_home_charger_load
-    radii[len(home_charger_choice):] = gross_work_charger_load[:-1]
-    radii = np.log10(radii / amount)
+    radii[len(home_charger_choice):] = gross_work_charger_load[1:]
+    radii = radii / amount
     
     colors = plt.cm.jet(np.linspace(0, 1, len(amount)))
     
@@ -287,9 +289,9 @@ def charger_pie(cars_data):
     
     
     rad2fmt = lambda x,pos: f"{x/(2*np.pi) * 100:.0f}%"
-    exp2fmt = lambda x,pos: f"$10^{{{x:.1f}}}$"
     ax.xaxis.set_major_formatter(FuncFormatter(rad2fmt))
-    ax.yaxis.set_major_formatter(FuncFormatter(exp2fmt))
+    #exp2fmt = lambda x,pos: f"$10^{{{x:.1f}}}$"
+    #ax.yaxis.set_major_formatter(FuncFormatter(exp2fmt))
     ax.set_rlim(bottom=0, top=max(radii))
     ax.set_rlabel_position(150)
     
@@ -301,14 +303,14 @@ def charger_pie(cars_data):
     #ax.tick_params(label=True)
     ax.tick_params(axis="y", labelsize=14)
     
-    ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=14)
+    # ax.legend(loc="lower right", bbox_to_anchor=(1.1, -0.1), fontsize=14)
+    ax.legend(loc="lower left", bbox_to_anchor=(-0.1, -0.1), fontsize=14)
 
     return fig
     
-    #ax.legend(loc="upper left", fontsize=12)
     
     
-def car_plot_bar(grid_links1, grid_links2, names, time):
+def link_bars(grid_links1, grid_links2, names, time):
     
     plt.close("all")
     fig, axs = plt.subplots(1, 1, constrained_layout=True, figsize=(9, 6))
