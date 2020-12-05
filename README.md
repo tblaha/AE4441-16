@@ -1,24 +1,45 @@
-## Additional python modules
+# Optimal Scheduling of Bi-directional Electric Cars
+
+This is the repository belonging to the report of the same name for the AE4441-16 course "Operations Optimization" at TU Delft, Aerospace Engineering, Control and Operations Master.
+
+![](./plots/test.gif)
+
+To run, download the repo and run complex.py from its working directory. Observer command line output and the plots in ./plots/
+
+Basic simulation settings can be changed in ./Lib/SimConfig.py.
+
+Additional scripts, mainly for verification, post-processing of LP files, and clustering of the output are in the root folder. Library files and functions in ./Lib/ are never supposed to be run by themselves; the need to be imported from the ./ working directory using, for instance:
+''' from Lib import cars_gen as cg'''
+
+
+
+
+
+
+# Python Configuration and Modules
+
+
+## Additional general purpose python modules
 
 For visualization. What is supposed to work:
-"""
-conda install numpy scipy matplotlib pandas networkx
+'''
+conda install numpy scipy matplotlib pandas networkx seaborn
 conda install -c conda-forge cartopy
-"""
+'''
 
 What worked on my Linux distro
-"""
+'''
 conda install numpy scipy matplotlib pandas networkx
 conda install geos cython shapely pyshp six
 conda install "proj4<5"
 
-\# then build from source like it's the motherfucking 90s:
+\# then build from source like it's the 90s:
 git clone https://github.com/SciTools/cartopy.git
 cd cartopy
 python setup.py install
-"""
+'''
 
-## Install the python module (note: if you're a pip guy, see https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_using_pip_to_install_gr.html):
+## Install Gurobi: we only need to install the python module (note: if you're a pip guy, see https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_using_pip_to_install_gr.html):
 1. Get Anaconda (or just conda, as you prefer) for your operating system --> 64bit only!
 2. From the Anaconda windows, open a "CMD.exe Prompt"
 3. Execute the following commands:
@@ -53,15 +74,4 @@ python setup.py install
     1. click on the lowest license (if there are multiple) at https://www.gurobi.com/downloads/licenses/
     2. Follow the instructions at the "Installation" section
         1. I cannot verify this for windows
-        
-        
-## Learn Gurobi:
-1. do the tutorials at
-    1. https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_simple_python_example.html
-    2. https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_python_matrix_example.html
-    3. May be important for transportation: https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_python_dictionary_examp.html
-
-
-
-
 
