@@ -14,7 +14,7 @@ import numpy as np
 seed = 2
 
 # car config
-N = 50  # number of cars
+N = 1000  # number of cars
 
 # grid config
 grid_setting = -1
