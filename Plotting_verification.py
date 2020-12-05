@@ -9,6 +9,10 @@ Created on Fri Dec  4 00:24:56 2020
 from Lib.pp_gen import pp_data_base, pp_data
 from Lib.cons_gen import cons_data_base, cons_data
 from Lib import SimConfig as cfg
+from Lib.grid_gen import grid_links
+from Lib.cars_gen import cars_data
+
+print(grid_links)
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,7 +72,7 @@ if powerplants == True:
 
 #%%Plotting the consumers 
 
-consumers = True    
+consumers = False    
 if consumers == True: 
     #Actually plotting - the first consumer 
     values = cons_data.groupby("Time")["Load"].sum()
@@ -82,22 +86,29 @@ if consumers == True:
     plt.show()
 
 
+#%%Plotting the grid verification 
+fig4, ax4 = plt.subplots(1,1,figsize=(10, 6))
+grid = True 
+if grid == True: 
+    ax4.hist(grid_links["Load"],
+         # [cars[i].s_day for i in range(len(cars))],
+         bins=35,
+         density=True,
+         cumulative=False,
+         histtype='step',
+         color="blue",
+         lw=2,
+         )
+    
+plt.legend(loc="lower right", fontsize=14)    
+ax4.set_xlabel("Grid Laods", fontsize=16)
+ax4.set_ylabel("Cumulative Distribution", fontsize=16)
+plt.show()
 
 
-
-
-
-
-
-
-     
+    
+  
+    
     
 
 
-
-
-    
-    
-    
-    
-    
