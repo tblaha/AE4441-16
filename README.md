@@ -33,10 +33,35 @@ conda install numpy scipy matplotlib pandas networkx
 conda install geos cython shapely pyshp six
 conda install "proj4<5"
 
-\# then build from source like it's the 90s:
+# then build from source like it's the 90s:
 git clone https://github.com/SciTools/cartopy.git
 cd cartopy
 python setup.py install
+```
+
+## Quantile Band plots with Seaborn
+
+I obtain the quantile bands in the charging plots (Charging_Patterns.py; See chapter 3 Results of the report), I had to patch the seaborn packaged with:
+
+```
+diff --git a/.conda/envs/till/lib/python3.8/site-packages/seaborn/relational.py b/relational.py
+index 6ec11ab..d61411a 100644
+--- a/.conda/envs/till/lib/python3.8/site-packages/seaborn/relational.py
++++ b/relational.py
+@@ -410,6 +410,13 @@ class _LinePlotter(_RelationalPlotter):
+             cis = pd.DataFrame(np.c_[est - sd, est + sd],
+                                index=est.index,
+                                columns=["low", "high"]).stack()
++        elif ci == "quantile":
++            minv = grouped.quantile(0.9)
++            maxv = grouped.quantile(0.1)
++            cis = pd.DataFrame(np.c_[minv, maxv],
++                               index=est.index,
++                               columns=["low", "high"]).stack()
++            
+         else:
+             cis = grouped.apply(bootstrapped_cis)
+ 
 ```
 
 ## Install Gurobi: we only need to install the python module (note: if you're a pip guy, see https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_using_pip_to_install_gr.html):
