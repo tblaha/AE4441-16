@@ -1,4 +1,4 @@
-# Optimal Scheduling of Bi-directional Electric Cars
+# Optimal (Dis)charging Scheduling of Bi-directional Electric Car Batteries in the Presence of Sustainable Power Sources
 
 This is the repository belonging to the report of the same name for the AE4441-16 course "Operations Optimization" at TU Delft, Aerospace Engineering, Control and Operations Master.
 
